@@ -6,10 +6,15 @@ extern Ume::Application* Ume::CreateApplication();
 
 int main(int argc, char** argv)
 {
-	std::cout << "Ume Engine start!" << std::endl;
+	Ume::Log::Init();
+
+	UME_TRACE("START");
+
 	auto app = Ume::CreateApplication();
 	app->Run();
 	delete app;
+
+	return 0;
 }
 
 #endif // UME_PLATFORM_WINDOWS
