@@ -8,12 +8,17 @@ public:
 
 	void OnUpdate() override
 	{
-		UME_INFO("ExampleLayer::OnUpdate({})", Name);
+		//UME_INFO("ExampleLayer::OnUpdate({})", Name);
 	}
 
 	void OnEvent(Ume::Event& e) override
 	{
-		UME_TRACE("ExampleLayer::OnEvent({0}): {1}", Name, e);
+		Ume::EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<Ume::MouseButtonPressedEvent>([this](Ume::MouseButtonPressedEvent& e)-> bool
+			{
+				UME_TRACE("ExampleLayer::OnEvent({0}): {1}", Name, e);
+				return true;
+			});
 	}
 };
 
@@ -22,8 +27,8 @@ class Sandbox : public Ume::Application
 public:
 	Sandbox()
 	{
-		//PushLayer(new ExampleLayer("Layer-1"));
-		//PushLayer(new ExampleLayer("Layer-2"));
+		PushLayer(new ExampleLayer("Layer-1"));
+		PushOverlay(new Ume::ImGuiLayer());
 	}
 	~Sandbox() {}
 };

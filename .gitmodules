@@ -4,3 +4,6 @@
 [submodule "Ume/vendor/GLFW"]
 	path = Ume/vendor/GLFW
 	url = git@github.com:TheCherno/glfw.git
+[submodule "Ume/vendor/imgui"]
+	path = Ume/vendor/imgui
+	url = https://github.com/TheCherno/imgui

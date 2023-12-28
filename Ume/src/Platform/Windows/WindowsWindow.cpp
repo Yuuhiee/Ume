@@ -137,6 +137,13 @@ namespace Ume
             MouseMovedEvent e((float)xPos, (float)yPos);
             data.EventCallback(e);
         });
+
+        glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int character)
+            {
+                WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+                KeyTypedEvent e(character);
+                data.EventCallback(e);
+            });
     }
 
     void WindowsWindow::Shutdown()
