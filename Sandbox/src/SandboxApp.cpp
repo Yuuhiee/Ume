@@ -1,5 +1,7 @@
 #include <Ume.h>
 
+#include "glm/glm.hpp"
+
 class ExampleLayer : public Ume::Layer
 {
 public:
@@ -8,17 +10,18 @@ public:
 
 	void OnUpdate() override
 	{
-		//UME_INFO("ExampleLayer::OnUpdate({})", Name);
+		if (Ume::Input::IsKeyPressed(UME_KEY_SPACE))
+			UME_TRACE("[{}] is pressed.", (char)UME_KEY_SPACE);
 	}
 
 	void OnEvent(Ume::Event& e) override
 	{
-		Ume::EventDispatcher dispatcher(e);
+		/*Ume::EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<Ume::MouseButtonPressedEvent>([this](Ume::MouseButtonPressedEvent& e)-> bool
 			{
 				UME_TRACE("ExampleLayer::OnEvent({0}): {1}", Name, e);
 				return true;
-			});
+			});*/
 	}
 };
 

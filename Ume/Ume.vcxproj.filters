@@ -16,13 +16,16 @@
     <Filter Include="Ume\Events">
       <UniqueIdentifier>{50D59A27-3C8D-DC74-A594-B5D0916B7765}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Ume\ImGUi">
-      <UniqueIdentifier>{F61C3809-6287-EC7F-ABC5-9D25176FCAD4}</UniqueIdentifier>
+    <Filter Include="Ume\ImGui">
+      <UniqueIdentifier>{16213809-828B-EC7F-CBC9-9D253773CAD4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.h">
       <Filter>Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Windows\WindowsInput.h">
+      <Filter>Platform\Windows</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
       <Filter>Platform\Windows</Filter>
@@ -50,7 +53,13 @@
       <Filter>Ume\Events</Filter>
     </ClInclude>
     <ClInclude Include="src\Ume\ImGui\ImGuiLayer.h">
-      <Filter>Ume\ImGUi</Filter>
+      <Filter>Ume\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ume\Input.h">
+      <Filter>Ume</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ume\KeyCodes.h">
+      <Filter>Ume</Filter>
     </ClInclude>
     <ClInclude Include="src\Ume\Layer.h">
       <Filter>Ume</Filter>
@@ -59,6 +68,9 @@
       <Filter>Ume</Filter>
     </ClInclude>
     <ClInclude Include="src\Ume\Log.h">
+      <Filter>Ume</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ume\MouseButtonCodes.h">
       <Filter>Ume</Filter>
     </ClInclude>
     <ClInclude Include="src\Ume\Window.h">
@@ -70,6 +82,9 @@
     <ClCompile Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.cpp">
       <Filter>Platform\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
+      <Filter>Platform\Windows</Filter>
+    </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
       <Filter>Platform\Windows</Filter>
     </ClCompile>
@@ -77,7 +92,7 @@
       <Filter>Ume</Filter>
     </ClCompile>
     <ClCompile Include="src\Ume\ImGui\ImGuiLayer.cpp">
-      <Filter>Ume\ImGUi</Filter>
+      <Filter>Ume\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="src\Ume\Layer.cpp">
       <Filter>Ume</Filter>

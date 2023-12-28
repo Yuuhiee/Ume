@@ -1,6 +1,8 @@
 workspace "Ume"
 	architecture "x64"
 
+	startproject "Sandbox"
+
 	configurations
 	{
 		"Debug",
@@ -12,9 +14,11 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 -- Include directories releateive to root folder (solution directory)
 IncludeDir = {}
+IncludeDir["spdlog"] = "Ume/vendor/spdlog/include"
 IncludeDir["GLFW"] = "Ume/vendor/GLFW/include"
 IncludeDir["Glad"] = "Ume/vendor/Glad/include"
 IncludeDir["ImGui"] = "Ume/vendor/imgui"
+IncludeDir["glm"] = "Ume/vendor/glm"
 
 include "Ume/vendor/GLFW"
 include "Ume/vendor/Glad"
@@ -24,6 +28,7 @@ project "Ume"
 	location "Ume"
 	kind "SharedLib"
 	language "C++"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -40,10 +45,11 @@ project "Ume"
 	includedirs
 	{
 		"%{prj.name}/src",
-		"%{prj.name}/vendor/spdlog/include",
+		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
-		"%{IncludeDir.ImGui}"
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.glm}"
 	}
 
 	links
@@ -56,41 +62,40 @@ project "Ume"
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "On"
 		systemversion "latest"
 
 		defines
 		{
 			"UME_PLATFORM_WINDOWS",
 			"UME_BUILD_DLL",
-			"GLFW_INCLUDE_NONE",
-			"UME_ENABLE_ASSERTS"
+			"GLFW_INCLUDE_NONE"
 		}
 
 		postbuildcommands
 		{
-			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox")
+			("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/Sandbox\"")
 		}
 
 	filter "configurations:Debug"
 		defines "UME_DEBUG"
-		buildoptions "/MDd"
+		runtime "Debug"
 		symbols "On"
 
 	filter "configurations:Release"
 		defines "UME_RELEASE"
-		buildoptions "/MD"
+		runtime "Release"
 		optimize "On"
 
 	filter "configurations:Dist"
 		defines "UME_DIST"
-		buildoptions "/MD"
+		runtime "Release"
 		optimize "On"
 
 project "Sandbox"
 	location "Sandbox"
 	kind "ConsoleApp"
 	language "C++"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -103,8 +108,9 @@ project "Sandbox"
 
 	includedirs
 	{
-		"Ume/vendor/spdlog/include",
-		"Ume/src"
+		"Ume/src",
+		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.glm}"
 	}
 
 	links
@@ -114,7 +120,6 @@ project "Sandbox"
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "On"
 		systemversion "latest"
 
 		defines
@@ -124,15 +129,15 @@ project "Sandbox"
 
 	filter "configurations:Debug"
 		defines "UME_DEBUG"
-		buildoptions "/MDd"
+		runtime "Debug"
 		symbols "On"
 
 	filter "configurations:Release"
 		defines "UME_RELEASE"
-		buildoptions "/MD"
+		runtime "Release"
 		optimize "On"
 
 	filter "configurations:Dist"
 		defines "UME_DIST"
-		buildoptions "/MD"
+		runtime "Release"
 		optimize "On"

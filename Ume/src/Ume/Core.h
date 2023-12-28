@@ -5,10 +5,15 @@
 		#define UME_API _declspec(dllexport)
 	#else
 		#define UME_API _declspec(dllimport)
-	#endif // UME_BUILD_DLL
+	#endif
 #else
 	#error Ume only support Windows!
-#endif // UME_PLATFORM_WINDOWS
+#endif
+
+#ifdef UME_DEBUG
+	#define UME_ENABLE_ASSERTS
+#endif
+
 
 #ifdef UME_ENABLE_ASSERTS
 	#define UME_ASSERT(x, ...) { if (!x) { UME_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
