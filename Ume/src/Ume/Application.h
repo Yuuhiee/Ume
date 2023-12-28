@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Core.h"
-
-#include "Window.h"
+#include "Ume/Core.h"
+#include "Ume/Window.h"
 #include "Ume/LayerStack.h"
 #include "Ume/Events/ApplicationEvent.h"
 

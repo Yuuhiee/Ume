@@ -12,10 +12,7 @@ namespace Ume
 {
 	ImGuiLayer::ImGuiLayer() : Layer("ImGuiLayer") {}
 
-	ImGuiLayer::~ImGuiLayer()
-	{
-
-	}
+	ImGuiLayer::~ImGuiLayer() {}
 
 	void ImGuiLayer::OnAttach()
 	{
