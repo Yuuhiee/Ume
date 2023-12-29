@@ -110,7 +110,8 @@ project "Sandbox"
 	{
 		"Ume/src",
 		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.glm}"
+		"Ume/vendor",
+		--"%{IncludeDir.glm}"
 	}
 
 	links

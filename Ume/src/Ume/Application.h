@@ -3,6 +3,7 @@
 #include "Ume/Core.h"
 #include "Ume/Window.h"
 #include "Ume/LayerStack.h"
+#include "Ume/ImGui/ImGuiLayer.h"
 #include "Ume/Events/ApplicationEvent.h"
 
 namespace Ume {
@@ -23,6 +24,7 @@ namespace Ume {
 		inline static Application& Get() { return *s_Instance; }
 	private:
 		std::unique_ptr<Window> m_Window;
+		ImGuiLayer* m_ImGuiLayer;
 		bool m_Running = true;
 		LayerStack m_LayerStack;
 

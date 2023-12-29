@@ -1,6 +1,7 @@
 #include <Ume.h>
 
-#include "glm/glm.hpp"
+//#include "glm/glm.hpp"
+#include "imgui/imgui.h"
 
 class ExampleLayer : public Ume::Layer
 {
@@ -16,12 +17,13 @@ public:
 
 	void OnEvent(Ume::Event& e) override
 	{
-		/*Ume::EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<Ume::MouseButtonPressedEvent>([this](Ume::MouseButtonPressedEvent& e)-> bool
-			{
-				UME_TRACE("ExampleLayer::OnEvent({0}): {1}", Name, e);
-				return true;
-			});*/
+	}
+
+	void OnImGuiRender() override
+	{
+	/*	ImGui::Begin("Test");
+		ImGui::Text("Hello World!");
+		ImGui::End();*/
 	}
 };
 
@@ -31,7 +33,6 @@ public:
 	Sandbox()
 	{
 		PushLayer(new ExampleLayer("Layer-1"));
-		PushOverlay(new Ume::ImGuiLayer());
 	}
 	~Sandbox() {}
 };

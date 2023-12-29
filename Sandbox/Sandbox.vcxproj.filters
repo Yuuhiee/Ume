@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Ume">
+      <UniqueIdentifier>{EC2A880B-5834-887C-E1AF-9E7C4DB8937C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor">
+      <UniqueIdentifier>{C9BFB898-B577-FAE5-1E7F-D3410A5695D6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui">
+      <UniqueIdentifier>{F3BFD1DB-DFB8-F02D-08EB-D5B2F442D039}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\examples">
+      <UniqueIdentifier>{01AF9607-6D71-CA91-B621-591E2223A36F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\examples\example_allegro5">
+      <UniqueIdentifier>{B680BE06-A2E8-84D4-0B54-99EAF7DA9BC0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\examples\example_freeglut_opengl2">
+      <UniqueIdentifier>{2F68F01B-1BFC-E5C3-84C0-3F78707320B6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\examples\example_glfw_opengl2">
+      <UniqueIdentifier>{C1200B4A-AD9E-5BE3-9696-197B82B39D0B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\examples\example_glfw_opengl3">
+      <UniqueIdentifier>{C2200B4A-AE9E-5BE3-9796-197B83B39D0B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\examples\example_glfw_vulkan">
+      <UniqueIdentifier>{BB2A8460-279B-86D9-F0B9-00625CE9BEDA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\examples\example_marmalade">
+      <UniqueIdentifier>{FF5CA60D-6BC2-3994-F49A-DB6C60FF2E03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\examples\example_null">
+      <UniqueIdentifier>{F624D19D-E276-A88D-CB95-E59DB786C176}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\examples\example_sdl_opengl2">
+      <UniqueIdentifier>{D42ACBD5-409B-CD4E-09BA-47D775E90550}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\examples\example_sdl_opengl3">
+      <UniqueIdentifier>{D52ACBD5-419B-CD4E-0ABA-47D776E90550}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\examples\example_sdl_vulkan">
+      <UniqueIdentifier>{6EBE91AA-5AD1-9103-03BB-6EF0EFAC2E51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\examples\example_win32_directx10">
+      <UniqueIdentifier>{C1B629D9-2D7D-86F5-76D8-1458E2DDF459}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\examples\example_win32_directx11">
+      <UniqueIdentifier>{C2B629D9-2E7D-86F5-77D8-1458E3DDF459}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\examples\example_win32_directx12">
+      <UniqueIdentifier>{C3B629D9-2F7D-86F5-78D8-1458E4DDF459}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\examples\example_win32_directx9">
+      <UniqueIdentifier>{79A89406-6551-FC35-8EE7-17B57AEF1677}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\misc">
+      <UniqueIdentifier>{AEC226AA-1A2F-E2A4-E322-7A024F4E040D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\misc\cpp">
+      <UniqueIdentifier>{80E31F10-ECA5-539A-3556-E226A1572C78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\misc\fonts">
+      <UniqueIdentifier>{8787DC97-F394-0A7E-7C7B-0669E887D634}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ume\vendor\imgui\misc\freetype">
+      <UniqueIdentifier>{21A590F5-0DCB-5A5C-F610-E027E2D57F28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{2DAB880B-99B4-887C-2230-9F7C8E38947C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\example_allegro5\main.cpp">
+      <Filter>Ume\vendor\imgui\examples\example_allegro5</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\example_freeglut_opengl2\main.cpp">
+      <Filter>Ume\vendor\imgui\examples\example_freeglut_opengl2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\example_glfw_opengl2\main.cpp">
+      <Filter>Ume\vendor\imgui\examples\example_glfw_opengl2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\example_glfw_opengl3\main.cpp">
+      <Filter>Ume\vendor\imgui\examples\example_glfw_opengl3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\example_glfw_vulkan\main.cpp">
+      <Filter>Ume\vendor\imgui\examples\example_glfw_vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\example_marmalade\main.cpp">
+      <Filter>Ume\vendor\imgui\examples\example_marmalade</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\example_null\main.cpp">
+      <Filter>Ume\vendor\imgui\examples\example_null</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\example_sdl_opengl2\main.cpp">
+      <Filter>Ume\vendor\imgui\examples\example_sdl_opengl2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\example_sdl_opengl3\main.cpp">
+      <Filter>Ume\vendor\imgui\examples\example_sdl_opengl3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\example_sdl_vulkan\main.cpp">
+      <Filter>Ume\vendor\imgui\examples\example_sdl_vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\example_win32_directx10\main.cpp">
+      <Filter>Ume\vendor\imgui\examples\example_win32_directx10</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\example_win32_directx11\main.cpp">
+      <Filter>Ume\vendor\imgui\examples\example_win32_directx11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\example_win32_directx12\main.cpp">
+      <Filter>Ume\vendor\imgui\examples\example_win32_directx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\example_win32_directx9\main.cpp">
+      <Filter>Ume\vendor\imgui\examples\example_win32_directx9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\imgui_impl_allegro5.cpp">
+      <Filter>Ume\vendor\imgui\examples</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\imgui_impl_dx10.cpp">
+      <Filter>Ume\vendor\imgui\examples</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\imgui_impl_dx11.cpp">
+      <Filter>Ume\vendor\imgui\examples</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\imgui_impl_dx12.cpp">
+      <Filter>Ume\vendor\imgui\examples</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\imgui_impl_dx9.cpp">
+      <Filter>Ume\vendor\imgui\examples</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\imgui_impl_freeglut.cpp">
+      <Filter>Ume\vendor\imgui\examples</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\imgui_impl_glfw.cpp">
+      <Filter>Ume\vendor\imgui\examples</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\imgui_impl_marmalade.cpp">
+      <Filter>Ume\vendor\imgui\examples</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\imgui_impl_opengl2.cpp">
+      <Filter>Ume\vendor\imgui\examples</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\imgui_impl_opengl3.cpp">
+      <Filter>Ume\vendor\imgui\examples</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\imgui_impl_sdl.cpp">
+      <Filter>Ume\vendor\imgui\examples</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\imgui_impl_vulkan.cpp">
+      <Filter>Ume\vendor\imgui\examples</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\examples\imgui_impl_win32.cpp">
+      <Filter>Ume\vendor\imgui\examples</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\imgui.cpp">
+      <Filter>Ume\vendor\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\imgui_demo.cpp">
+      <Filter>Ume\vendor\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\imgui_draw.cpp">
+      <Filter>Ume\vendor\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\imgui_widgets.cpp">
+      <Filter>Ume\vendor\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\misc\cpp\imgui_stdlib.cpp">
+      <Filter>Ume\vendor\imgui\misc\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\misc\fonts\binary_to_compressed_c.cpp">
+      <Filter>Ume\vendor\imgui\misc\fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Ume\vendor\imgui\misc\freetype\imgui_freetype.cpp">
+      <Filter>Ume\vendor\imgui\misc\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SandboxApp.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

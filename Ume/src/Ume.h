@@ -2,9 +2,8 @@
 
 #include "Ume/Application.h"
 #include "Ume/Log.h"
-#include "Ume/Layer.h"
 
-#include "Ume/Events/MouseEvent.h"
+#include "Ume/Layer.h"
 #include "Ume/ImGui/ImGuiLayer.h"
 
 #include "Ume/KeyCodes.h"
