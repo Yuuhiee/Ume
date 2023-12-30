@@ -1,10 +1,14 @@
 #pragma once
 
 #ifdef UME_PLATFORM_WINDOWS
-	#ifdef UME_BUILD_DLL
-		#define UME_API _declspec(dllexport)
+	#if UME_DYNAMIC_LINK
+		#ifdef UME_BUILD_DLL
+			#define UME_API __declspec(dllexport)
+		#else
+			#define UME_API __declspec(dllimport)
+		#endif
 	#else
-		#define UME_API _declspec(dllimport)
+		#define UME_API
 	#endif
 #else
 	#error Ume only support Windows!
