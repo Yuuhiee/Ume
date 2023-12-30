@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Ume/Window.h"
+#include "Ume/Renderer/GraphicsContext.h"
 
 #include <GLFW/glfw3.h>
 
@@ -37,5 +38,7 @@ namespace Ume
 		};
 
 		WindowData m_Data;
+
+		GraphicsContext* m_Context;
 	};
 }

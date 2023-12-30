@@ -4,7 +4,11 @@
 #include "Ume/Window.h"
 #include "Ume/LayerStack.h"
 #include "Ume/ImGui/ImGuiLayer.h"
+#include "Ume/Events/KeyEvent.h"
 #include "Ume/Events/ApplicationEvent.h"
+
+#include "Ume/Renderer/Shader.h"
+#include "Ume/Renderer/Buffer.h"
 
 namespace Ume {
 
@@ -23,12 +27,18 @@ namespace Ume {
 		inline Window& GetWindow() { return *m_Window; }
 		inline static Application& Get() { return *s_Instance; }
 	private:
-		std::unique_ptr<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer;
-		bool m_Running = true;
 		LayerStack m_LayerStack;
+		std::unique_ptr<Window> m_Window;
+		std::unique_ptr<Shader> m_Shader;
 
+		bool m_Running = true;
+		unsigned int m_VertexArray;
+		std::unique_ptr<VertexBuffer> m_VertexBuffer;
+		std::unique_ptr<IndexBuffer> m_IndexBuffer;
+	private:
 		bool OnWindowClose(WindowCloseEvent& e);
+		bool OnKeyPressed(KeyPressedEvent& e);
 	private:
 		static Application* s_Instance;
 	};

@@ -71,6 +71,12 @@
       <Filter>Ume</Filter>
     </ClInclude>
     <ClInclude Include="src\umepch.h" />
+    <ClInclude Include="src\Ume\Renderer\GraphicsContext.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />
+    <ClInclude Include="src\Ume\Renderer\Shader.h" />
+    <ClInclude Include="src\Ume\Renderer\Buffer.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
+    <ClInclude Include="src\Ume\Renderer\Renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
@@ -98,5 +104,10 @@
       <Filter>Ume</Filter>
     </ClCompile>
     <ClCompile Include="src\umepch.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
+    <ClCompile Include="src\Ume\Renderer\Shader.cpp" />
+    <ClCompile Include="src\Ume\Renderer\Buffer.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
+    <ClCompile Include="src\Ume\Renderer\Renderer.cpp" />
   </ItemGroup>
 </Project>

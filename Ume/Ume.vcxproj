@@ -140,6 +140,11 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Ume\Renderer\Renderer.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
+    <ClInclude Include="src\Ume\Renderer\Buffer.h" />
+    <ClInclude Include="src\Ume\Renderer\Shader.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Ume.h" />
@@ -157,10 +162,16 @@
     <ClInclude Include="src\Ume\LayerStack.h" />
     <ClInclude Include="src\Ume\Log.h" />
     <ClInclude Include="src\Ume\MouseButtonCodes.h" />
+    <ClInclude Include="src\Ume\Renderer\GraphicsContext.h" />
     <ClInclude Include="src\Ume\Window.h" />
     <ClInclude Include="src\umepch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Ume\Renderer\Renderer.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
+    <ClCompile Include="src\Ume\Renderer\Buffer.cpp" />
+    <ClCompile Include="src\Ume\Renderer\Shader.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\Ume\Application.cpp" />
