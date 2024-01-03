@@ -2,6 +2,7 @@
 
 #include "Core.h"
 #include "Ume/Events/Event.h"
+#include "Ume/Core/Timestep.h"
 
 namespace Ume
 {
@@ -13,7 +14,7 @@ namespace Ume
 
 		virtual void OnAttach() {};
 		virtual void OnDetach() {};
-		virtual void OnUpdate() {};
+		virtual void OnUpdate(Timestep timestep) {};
 		virtual void OnImGuiRender() {};
 		virtual void OnEvent(Event& e) {};
 

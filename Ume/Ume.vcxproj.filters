@@ -77,6 +77,15 @@
     <ClInclude Include="src\Ume\Renderer\Buffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="src\Ume\Renderer\Renderer.h" />
+    <ClInclude Include="src\Ume\Renderer\VertexArray.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLVertexArray.h" />
+    <ClInclude Include="src\Ume\Renderer\RendererAPI.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLRendererAPI.h" />
+    <ClInclude Include="src\Ume\Renderer\RenderCommand.h" />
+    <ClInclude Include="src\Ume\Renderer\Camera.h" />
+    <ClInclude Include="src\Ume\Renderer\PerspectiveCamera.h" />
+    <ClInclude Include="src\Ume\Core\Timestep.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
@@ -109,5 +118,12 @@
     <ClCompile Include="src\Ume\Renderer\Buffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="src\Ume\Renderer\Renderer.cpp" />
+    <ClCompile Include="src\Ume\Renderer\VertexArray.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLVertexArray.cpp" />
+    <ClCompile Include="src\Ume\Renderer\RendererAPI.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLRendererAPI.cpp" />
+    <ClCompile Include="src\Ume\Renderer\RenderCommand.cpp" />
+    <ClCompile Include="src\Ume\Renderer\PerspectiveCamera.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLShader.cpp" />
   </ItemGroup>
 </Project>

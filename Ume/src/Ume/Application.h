@@ -7,9 +7,6 @@
 #include "Ume/Events/KeyEvent.h"
 #include "Ume/Events/ApplicationEvent.h"
 
-#include "Ume/Renderer/Shader.h"
-#include "Ume/Renderer/Buffer.h"
-
 namespace Ume {
 
 	class UME_API Application
@@ -29,13 +26,9 @@ namespace Ume {
 	private:
 		ImGuiLayer* m_ImGuiLayer;
 		LayerStack m_LayerStack;
-		std::unique_ptr<Window> m_Window;
-		std::unique_ptr<Shader> m_Shader;
-
 		bool m_Running = true;
-		unsigned int m_VertexArray;
-		std::unique_ptr<VertexBuffer> m_VertexBuffer;
-		std::unique_ptr<IndexBuffer> m_IndexBuffer;
+		Scope<Window> m_Window;
+		float m_LastFrameTime = 0.0f;
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnKeyPressed(KeyPressedEvent& e);

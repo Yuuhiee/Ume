@@ -19,9 +19,13 @@ namespace Ume
         UME_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
     }
 
-    Window* Window::Create(const WindowProps& props)
+    Scope<Window> Window::Create(const WindowProps& props)
     {
-        return new WindowsWindow(props);
+#ifdef UME_PLATFORM_WINDOWS
+        return  CreateScope<WindowsWindow>(props);
+#else
+        return nullptr;
+#endif
     }
 
     WindowsWindow::WindowsWindow(const WindowProps& props)

@@ -23,6 +23,8 @@ namespace Ume
 		UME_CORE_INFO("OpenGL Info | Vendor:\t{}", (const char*)glGetString(GL_VENDOR));
 		UME_CORE_INFO("            | Renderer:\t{}", (const char*)glGetString(GL_RENDERER));
 		UME_CORE_INFO("            | Version:\t{}", (const char*)glGetString(GL_VERSION));
+
+		glEnable(GL_DEPTH_TEST);
 	}
 
 	void OpenGLContext::SwapBuffer()
