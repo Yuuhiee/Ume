@@ -17,5 +17,6 @@
 #include "Ume/Renderer/PerspectiveCamera.h"
 #include "Ume/Renderer/Renderer.h"
 #include "Ume/Renderer/RenderCommand.h"
+#include "Ume/Renderer/Texture.h"
 
 #include "Ume/EntryPoint.h"

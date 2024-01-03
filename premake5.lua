@@ -19,6 +19,7 @@ IncludeDir["GLFW"] = "Ume/vendor/GLFW/include"
 IncludeDir["Glad"] = "Ume/vendor/Glad/include"
 IncludeDir["ImGui"] = "Ume/vendor/imgui"
 IncludeDir["glm"] = "Ume/vendor/glm"
+IncludeDir["stb_image"] = "Ume/vendor/stb_image"
 
 include "Ume/vendor/GLFW"
 include "Ume/vendor/Glad"
@@ -40,7 +41,11 @@ project "Ume"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/stb_image/**.h",
+		"%{prj.name}/vendor/stb_image/**.cpp",
+		"%{prj.name}/vendor/glm/glm/**.hpp",
+		"%{prj.name}/vendor/glm/glm/**.inl",
 	}
 
 	includedirs
@@ -50,7 +55,8 @@ project "Ume"
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.stb_image}"
 	}
 
 	defines
