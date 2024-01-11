@@ -2,14 +2,25 @@
 #include "Renderer.h"
 
 #include "RenderCommand.h"
+#include "Renderer2D.h"
 
 namespace Ume
 {
-	Renderer::SceneData* Renderer::s_SceneData = new Renderer::SceneData;
+	Scope<Renderer::SceneData> Renderer::s_SceneData = nullptr;
+	Ref<ShaderLibrary> Renderer::s_ShaderLibrary = nullptr;
 
-	void Renderer::StartScene(const Ref<Camera>& camera)
+	void Renderer::Init()
 	{
-		s_SceneData->ViewProjection = camera->GetViewProjectionMatrix();
+		s_SceneData = CreateScope<SceneData>();
+		s_ShaderLibrary = CreateRef<ShaderLibrary>();
+
+		RenderCommand::Init();
+		Renderer2D::Init();
+	}
+
+	void Renderer::StartScene(const Camera& camera)
+	{
+		s_SceneData->ViewProjection = camera.GetViewProjectionMatrix();
 	}
 
 	void Renderer::EndScene()
@@ -24,5 +35,10 @@ namespace Ume
 
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
+	}
+
+	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
+	{
+		RenderCommand::SetViewport(0, 0, width, height);
 	}
 }

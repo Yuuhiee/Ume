@@ -1,7 +1,7 @@
 #include "umepch.h"
 #include "WindowsInput.h"
 
-#include "Ume/Application.h"
+#include "Ume/Core/Application.h"
 #include "GLFW/glfw3.h"
 
 namespace Ume

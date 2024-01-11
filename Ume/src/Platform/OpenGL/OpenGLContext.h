@@ -12,6 +12,8 @@ namespace Ume
 
 		virtual void Init() override;
 		virtual void SwapBuffer() override;
+		virtual void Resize(float width, float height) override;
+
 	private:
 		GLFWwindow* m_WindowHandle;
 	};

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "umepch.h"
-#include "Ume/Core.h"
+#include "Ume/Core/Base.h"
 #include "spdlog/fmt/ostr.h"
 
 namespace Ume

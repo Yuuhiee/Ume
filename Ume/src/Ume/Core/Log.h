@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Ume/Core.h"
+#include "Ume/Core/Base.h"
 #include "spdlog/spdlog.h"
 
 namespace Ume

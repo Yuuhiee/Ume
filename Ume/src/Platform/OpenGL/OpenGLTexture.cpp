@@ -3,51 +3,144 @@
 
 #include "glad/glad.h"
 #include "stb_image.h"
-
-Ume::OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
-	: m_Path(path)
+namespace Ume
 {
-	int width, height, channels;
-	stbi_set_flip_vertically_on_load(true);
-	stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-	UME_CORE_ASSERT(data, "Failed to load image!");
-	m_Width = (uint32_t)width;
-	m_Height = (uint32_t)height;
-	
-	glGenTextures(1, &m_RendererID);
-	glBindTexture(GL_TEXTURE_2D, m_RendererID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	glGenerateMipmap(GL_TEXTURE_2D);
+	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, const TextureSpecification& specification)
+	{
+		m_Specification.Format = specification.Format;
+		m_Specification.Filter = specification.Filter;
+		m_Specification.Wrap = specification.Wrap;
+		m_Specification.GenMips = specification.GenMips;
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	/*GLenum format;
-	if (channels == 1)
-		format = GL_RED;
-	else if (channels == 3)
-		format = GL_RGB;
-	else if (channels == 4)
-		format = GL_RGBA;
+		m_Width = (uint32_t)width;
+		m_Height = (uint32_t)height;
 
-	glBindTexture(GL_TEXTURE_2D, m_RendererID);
-	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-	glGenerateMipmap(GL_TEXTURE_2D);
+		GLenum format = 0, internalFormat = 0;
+		switch (specification.Format)
+		{
+		case ImageFormat::RED8UI: internalFormat = GL_RED; format = GL_RED;  break;
+		case ImageFormat::RGB: internalFormat = GL_RGB8; format = GL_RGB;	 break;
+		case ImageFormat::RGBA: internalFormat = GL_RGBA8; format = GL_RGBA; break;
+		default: UME_CORE_ERROR("Unsupported texture format!");
+		}
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);*/
+		m_Format = format;
+		m_InternalFormat = internalFormat;
 
-	stbi_image_free(data);
-}
+		/*switch (channels)
+		{
+			case 1: internalFormat = GL_RED; format = GL_RED;  break;
+			case 3: internalFormat = GL_RGB8; format = GL_RGB;	 break;
+			case 4: internalFormat = GL_RGBA8; format = GL_RGBA; break;
+			default: UME_CORE_ERROR("Unsupported texture format!");
+		}*/
 
-Ume::OpenGLTexture2D::~OpenGLTexture2D()
-{
-	glDeleteTextures(1, &m_RendererID);
-}
+		GLenum filter = 0, wrap = 0;
+		switch (specification.Filter)
+		{
+		case TextureFilter::Linear: filter = GL_LINEAR;  break;
+		case TextureFilter::Nearest: filter = GL_NEAREST; break;
+		}
 
-void Ume::OpenGLTexture2D::Bind(int slot) const
-{
-	glActiveTexture(GL_TEXTURE0 + slot);
-	glBindTexture(GL_TEXTURE_2D, m_RendererID);
+		switch (specification.Wrap)
+		{
+		case TextureWrap::Clamp: wrap = GL_CLAMP_TO_EDGE;  break;
+		case TextureWrap::Repeat: wrap = GL_REPEAT;  break;
+		}
+		glGenTextures(1, &m_RendererID);
+		glBindTexture(GL_TEXTURE_2D, m_RendererID);
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, (int)width, (int)height, 0, format, GL_UNSIGNED_BYTE, nullptr);
+
+		if (specification.GenMips)
+			glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
+	}
+
+	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, const TextureSpecification& specification)
+		: m_Path(path)
+	{
+		int width, height, channels;
+		stbi_set_flip_vertically_on_load(true);
+		stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+		UME_CORE_ASSERT(data, "Failed to load image!");
+		m_Width = (uint32_t)width;
+		m_Height = (uint32_t)height;
+
+		m_Specification.Format = specification.Format;
+		m_Specification.Filter = specification.Filter;
+		m_Specification.Wrap = specification.Wrap;
+		m_Specification.GenMips = specification.GenMips;
+
+		GLenum format = 0, internalFormat = 0;
+
+		switch (specification.Format)
+		{
+		case ImageFormat::RED8UI: internalFormat = GL_RED; format = GL_RED;  break;
+		case ImageFormat::RGB: internalFormat = GL_RGB8; format = GL_RGB;	 break;
+		case ImageFormat::RGBA: internalFormat = GL_RGBA8; format = GL_RGBA; break;
+		default: UME_CORE_ERROR("Unsupported texture format!");
+		}
+
+		m_Format = format;
+		m_InternalFormat = internalFormat;
+
+		/*switch (channels)
+		{
+			case 1: internalFormat = GL_RED; format = GL_RED;  break;
+			case 3: internalFormat = GL_RGB8; format = GL_RGB;	 break;
+			case 4: internalFormat = GL_RGBA8; format = GL_RGBA; break;
+			default: UME_CORE_ERROR("Unsupported texture format!");
+		}*/
+
+		GLenum filter = 0, wrap = 0;
+		switch (specification.Filter)
+		{
+		case TextureFilter::Linear: filter = GL_LINEAR;  break;
+		case TextureFilter::Nearest: filter = GL_NEAREST; break;
+		}
+
+		switch (specification.Wrap)
+		{
+		case TextureWrap::Clamp: wrap = GL_CLAMP_TO_EDGE;  break;
+		case TextureWrap::Repeat: wrap = GL_REPEAT;  break;
+		}
+
+		glGenTextures(1, &m_RendererID);
+		glBindTexture(GL_TEXTURE_2D, m_RendererID);
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+
+		if (specification.GenMips)
+			glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
+
+		stbi_image_free(data);
+	}
+
+	OpenGLTexture2D::~OpenGLTexture2D()
+	{
+		glDeleteTextures(1, &m_RendererID);
+	}
+
+	void OpenGLTexture2D::SetData(void* data, uint32_t size)
+	{
+		glBindTexture(GL_TEXTURE_2D, m_RendererID);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_Width, m_Height, m_Format, GL_UNSIGNED_BYTE, data);
+	}
+
+	void OpenGLTexture2D::Bind(int slot) const
+	{
+		glActiveTexture(GL_TEXTURE0 + slot);
+		glBindTexture(GL_TEXTURE_2D, m_RendererID);
+	}
+
 }

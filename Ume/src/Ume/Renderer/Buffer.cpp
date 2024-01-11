@@ -6,8 +6,27 @@
 
 namespace Ume
 {
+	Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
+	{
+		UME_PROFILE_FUNCTION();
+
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None:
+			UME_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+			return nullptr;
+		case RendererAPI::API::OpenGL:
+			return CreateRef<OpenGLVertexBuffer>(size);
+		}
+
+		UME_CORE_ASSERT(false, "Unknown Renderer API!");
+		return nullptr;
+	}
+
 	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size)
 	{
+		UME_PROFILE_FUNCTION();
+
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:
@@ -23,6 +42,8 @@ namespace Ume
 
 	Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t count)
 	{
+		UME_PROFILE_FUNCTION();
+
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:
@@ -35,14 +56,19 @@ namespace Ume
 		UME_CORE_ASSERT(false, "Unknown Renderer API!");
 		return nullptr;
 	}
+
 	BufferLayout::BufferLayout(std::initializer_list<BufferElement> elements)
 		: m_Elements(elements)
 	{
+		UME_PROFILE_FUNCTION();
+
 		CalculateOffsetAndStride();
 	}
 
 	void BufferLayout::CalculateOffsetAndStride()
 	{
+		UME_PROFILE_FUNCTION();
+
 		m_Stride = 0;
 
 		uint32_t offset = 0;

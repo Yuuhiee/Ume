@@ -9,11 +9,14 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <array>
 #include <unordered_map>
 #include <unordered_set>
 
-#include "Ume/Log.h"
+#include "Ume/Core/Log.h"
+
+#include "Ume/Debug/Instrumentor.h"
 
 #ifdef UME_PLATFORM_WINDOWS
-	#include <Windows.h>
+#include <Windows.h>
 #endif // UME_PLATFORM_WINDOWS

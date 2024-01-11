@@ -131,7 +131,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Sandbox2D.h" />
+    <ClInclude Include="src\Sandbox3D.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Sandbox2D.cpp" />
+    <ClCompile Include="src\Sandbox3D.cpp" />
     <ClCompile Include="src\SandboxApp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\BatchQuad.glsl" />
+    <None Include="assets\shaders\FlatColor.glsl" />
+    <None Include="assets\shaders\FlatTexture.glsl" />
+    <None Include="assets\shaders\Test.glsl" />
+    <None Include="assets\shaders\Texture.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ume\Ume.vcxproj">
