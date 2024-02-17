@@ -18,6 +18,7 @@
 #include "Ume/Renderer/Renderer2D.h"
 #include "Ume/Renderer/RenderCommand.h"
 #include "Ume/Renderer/Texture.h"
+#include "Ume/Renderer/Framebuffer.h"
 #include "Ume/Renderer/PerspectiveCamera.h"
 #include "Ume/Renderer/PerspectiveCameraController.h"
 #include "Ume/Renderer/OrthographicCamera.h"

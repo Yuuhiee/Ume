@@ -123,8 +123,7 @@ namespace Ume
 	};
 }
 
-#define UME_PROFILE 1
-#if UME_PROFILE
+#ifdef UME_PROFILE
 #define UME_PROFILE_BEGIN_SESSION(name, filepath) ::Ume::Instrumentor::Get().BeginSession(name, filepath)
 #define UME_PROFILE_END_SESSION() ::Ume::Instrumentor::Get().EndSession()
 #define UME_PROFILE_SCOPE(name) ::Ume::InstrumentationTimer timer##__LINE__(name);

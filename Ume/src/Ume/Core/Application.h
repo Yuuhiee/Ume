@@ -13,10 +13,11 @@ namespace Ume
     class UME_API Application
     {
     public:
-        Application();
+        Application(const std::string& name = "Application");
         virtual ~Application() {}
 
         void Run();
+        void Close();
         void OnEvent(Event &e);
 
         void PushLayer(Layer *layer);

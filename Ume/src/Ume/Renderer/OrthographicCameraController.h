@@ -8,6 +8,15 @@
 
 namespace Ume
 {
+	struct OrthographicCameraBounds
+	{
+		float Left, Right;
+		float Bottom, Top;
+
+		float GetWidth() { return Right - Left; }
+		float GetHeight() { return Top - Bottom; }
+	};
+
 	class OrthographicCameraController : public CameraController
 	{
 	public:
@@ -17,7 +26,12 @@ namespace Ume
 
 		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& e) override;
+		
+		void Resize(uint32_t width, uint32_t height);
+	public:
 		inline virtual const Camera& GetCamera() const override { return m_Camera; }
+		inline const OrthographicCameraBounds& GetBounds() const { return m_Bound; }
+		inline const glm::vec3& GetPosition() const { return m_CameraPosition; }
 	private:
 		bool OnMouseScrolled(const MouseScrolledEvent& e);
 		bool OnWindowResized(const WindowResizeEvent& e);
@@ -25,6 +39,7 @@ namespace Ume
 		float m_AspectRatio = 1.0f;
 		float m_ZoomLevel = 1.0f;
 		OrthographicCamera m_Camera;
+		OrthographicCameraBounds m_Bound;
 
 		bool m_Rotation;
 

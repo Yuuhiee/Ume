@@ -10,10 +10,8 @@ namespace Ume
 		RED16UI,
 		RED32UI,
 		RED32F,
-		RG8,
-		RG16F,
-		RG32F,
 		RGB,
+		RGB16F,
 		RGBA,
 		RGBA16F,
 		RGBA32F,
@@ -42,7 +40,8 @@ namespace Ume
 		None = 0,
 		Nearest,
 		Linear,
-		Cubic
+		Cubic,
+		Mipmap,
 	};
 
 	enum class TextureType

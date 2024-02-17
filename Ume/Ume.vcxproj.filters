@@ -63,6 +63,9 @@
     <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h">
       <Filter>src\Platform\OpenGL</Filter>
     </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLFramebuffer.h">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLRendererAPI.h">
       <Filter>src\Platform\OpenGL</Filter>
     </ClInclude>
@@ -142,6 +145,9 @@
       <Filter>src\Ume\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Ume\Renderer\CameraController.h">
+      <Filter>src\Ume\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ume\Renderer\Framebuffer.h">
       <Filter>src\Ume\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Ume\Renderer\GraphicsContext.h">
@@ -1439,6 +1445,9 @@
     <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp">
       <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLFramebuffer.cpp">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLRendererAPI.cpp">
       <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
@@ -1476,6 +1485,9 @@
       <Filter>src\Ume\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="src\Ume\Renderer\Buffer.cpp">
+      <Filter>src\Ume\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Ume\Renderer\Framebuffer.cpp">
       <Filter>src\Ume\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Ume\Renderer\OrthographicCamera.cpp">

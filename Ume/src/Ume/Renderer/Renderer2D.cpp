@@ -20,7 +20,7 @@ namespace Ume
 
 	struct Renderer2DData
 	{
-		static const uint32_t MaxQuads = 10;
+		static const uint32_t MaxQuads = 100;
 		static const uint32_t MaxVertices = MaxQuads * 4;
 		static const uint32_t MaxIndices = MaxQuads * 6;
 		static const uint32_t MaxTextureSlots = 32;
@@ -168,9 +168,10 @@ namespace Ume
 
 		float textureIndex = 0.0f;
 
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
-			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
+		if (rotation)
+			model *= glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f });
+		model *= glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
 		for (int i = 0; i < 4; i++)
 		{
@@ -184,15 +185,6 @@ namespace Ume
 		s_Data.QuadIndexCount += 6;
 
 		s_Data.Stats.QuadCount++;
-
-		/*glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-		s_Data.TextureShader->Bind();
-		s_Data.TextureShader->SetMat4("u_Model", model);
-		s_Data.TextureShader->SetFloat4("u_Color", color);
-
-		s_Data.WhiteTexture->Bind(0);
-		s_Data.QuadVertexArray->Bind();
-		RenderCommand::DrawIndexed(s_Data.QuadVertexArray);*/
 	}
 
 	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture)
@@ -206,7 +198,7 @@ namespace Ume
 
 		for (uint32_t i = 1; i < s_Data.TextureInsertIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].get() == *texture.get())
+			if (s_Data.TextureSlots[i].get() == texture.get())
 			{
 				textureIndex = (float)i;
 				break;
@@ -221,15 +213,17 @@ namespace Ume
 		}
 
 		glm::vec4 color(1.0f);
+		std::vector<glm::vec2> textureCoords = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
-			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
+		if (rotation)
+			model *= glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f });
+		model *= glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
 		for (int i = 0; i < 4; i++)
 		{
 			s_Data.QuadVertexBufferPtr->Position = model * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->TexCoord = s_Data.QuadVertexTexCoords[i];
+			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->Color = color;
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr++;
@@ -238,15 +232,60 @@ namespace Ume
 		s_Data.QuadIndexCount += 6;
 
 		s_Data.Stats.QuadCount++;
+	}
 
-		/*glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-		s_Data.TextureShader->Bind();
-		s_Data.TextureShader->SetMat4("u_Model", model);
-		s_Data.TextureShader->SetFloat4("u_Color", glm::vec4(1.0f));
+	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<SubTexture2D>& subTexture)
+	{
+		DrawQuad({ position.x, position.y, 0.0f }, size, rotation, subTexture);
+	}
 
-		texture->Bind(0);
-		s_Data.QuadVertexArray->Bind();
-		RenderCommand::DrawIndexed(s_Data.QuadVertexArray);*/
+	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<SubTexture2D>& subTexture)
+	{
+		UME_PROFILE_FUNCTION();
+
+		if (s_Data.QuadIndexCount >= s_Data.MaxIndices)
+			FlushAndReset();
+
+		float textureIndex = 0.0f;
+
+		auto& texture = subTexture->GetTexture();
+
+		for (uint32_t i = 1; i < s_Data.TextureInsertIndex; i++)
+		{
+			if (s_Data.TextureSlots[i].get() == texture.get())
+			{
+				textureIndex = (float)i;
+				break;
+			}
+		}
+
+		if (textureIndex == 0)
+		{
+			textureIndex = (float)s_Data.TextureInsertIndex;
+			s_Data.TextureSlots[s_Data.TextureInsertIndex] = texture;
+			s_Data.TextureInsertIndex++;
+		}
+
+		glm::vec4 color(1.0f);
+		auto& textureCoords = subTexture->GetTexcoords();
+
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
+		if (rotation)
+			model *= glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f });
+		model *= glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+
+		for (int i = 0; i < 4; i++)
+		{
+			s_Data.QuadVertexBufferPtr->Position = model * s_Data.QuadVertexPositions[i];
+			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
+			s_Data.QuadVertexBufferPtr->Color = color;
+			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+			s_Data.QuadVertexBufferPtr++;
+		}
+
+		s_Data.QuadIndexCount += 6;
+
+		s_Data.Stats.QuadCount++;
 	}
 
 	Renderer2D::Stastistics Renderer2D::GetStastistics() { return s_Data.Stats; }

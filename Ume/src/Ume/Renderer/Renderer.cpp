@@ -27,6 +27,11 @@ namespace Ume
 	{
 	}
 
+	void Renderer::EnableDepthTest(bool enable)
+	{
+		RenderCommand::EnableDepthTest(enable);
+	}
+
 	void Renderer::Submit(const Ref<VertexArray>& vertexArray, const Ref<Shader> shader, const glm::mat4 modelMatrix)
 	{
 		shader->Bind();

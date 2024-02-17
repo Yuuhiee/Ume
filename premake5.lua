@@ -21,9 +21,11 @@ IncludeDir["ImGui"] = "Ume/vendor/imgui"
 IncludeDir["glm"] = "Ume/vendor/glm"
 IncludeDir["stb_image"] = "Ume/vendor/stb_image"
 
-include "Ume/vendor/GLFW"
-include "Ume/vendor/Glad"
-include "Ume/vendor/imgui"
+group "Dependencies"
+	include "Ume/vendor/GLFW"
+	include "Ume/vendor/Glad"
+	include "Ume/vendor/imgui"
+group ""
 
 project "Ume"
 	location "Ume"
@@ -99,6 +101,59 @@ project "Ume"
 
 project "Sandbox"
 	location "Sandbox"
+	kind "ConsoleApp"
+	language "C++"
+	cppdialect "C++17"
+	staticruntime "on"
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	files
+	{
+		"%{prj.name}/src/**.h",
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/assets/shaders/**.glsl"
+	}
+
+	includedirs
+	{
+		"Ume/src",
+		"Ume/vendor",
+		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.glm}"
+	}
+
+	links
+	{
+		"Ume"
+	}
+
+	filter "system:windows"
+		systemversion "latest"
+
+		defines
+		{
+			"UME_PLATFORM_WINDOWS"
+		}
+
+	filter "configurations:Debug"
+		defines "UME_DEBUG"
+		runtime "Debug"
+		symbols "on"
+
+	filter "configurations:Release"
+		defines "UME_RELEASE"
+		runtime "Release"
+		optimize "on"
+
+	filter "configurations:Dist"
+		defines "UME_DIST"
+		runtime "Release"
+		optimize "on"
+
+project "Editor"
+	location "Editor"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++17"

@@ -12,6 +12,7 @@ namespace Ume
 
 		inline virtual uint32_t GetWidth() const override { return m_Width; }
 		inline virtual uint32_t GetHeight() const override { return m_Height; }
+		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
 
 		virtual void SetData(void* data, uint32_t size) override;
 
@@ -25,7 +26,6 @@ namespace Ume
 		uint32_t m_Width, m_Height;
 		uint32_t m_RendererID;
 		TextureSpecification m_Specification;
-		int m_Format, m_InternalFormat;
 	};
 }
 

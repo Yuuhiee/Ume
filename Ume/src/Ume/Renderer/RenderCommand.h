@@ -31,6 +31,11 @@ namespace Ume
 		{
 			s_RendererAPI->DrawIndexed(vertexArray, indexCount);
 		}
+
+		inline static void EnableDepthTest(bool enable)
+		{
+			s_RendererAPI->EnableDepthTest(enable);
+		}
 	private:
 		static Scope<RendererAPI> s_RendererAPI;
 	};

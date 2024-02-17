@@ -18,6 +18,7 @@
 
 #ifdef UME_DEBUG
 	#define UME_ENABLE_ASSERTS
+	//#define UME_PROFILE
 #endif
 
 

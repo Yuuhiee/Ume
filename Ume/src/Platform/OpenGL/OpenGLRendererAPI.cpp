@@ -43,4 +43,12 @@ namespace Ume
 
 		glViewport(x, y, width, height);
 	}
+
+	void OpenGLRendererAPI::EnableDepthTest(bool enable)
+	{
+		if (enable)
+			glEnable(GL_DEPTH_TEST);
+		else
+			glDisable(GL_DEPTH_TEST);
+	}
 }

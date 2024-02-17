@@ -12,6 +12,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\ParticleSystem.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="src\Sandbox2D.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -20,6 +23,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\ParticleSystem.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="src\Sandbox2D.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -38,6 +44,9 @@
       <Filter>assets\shaders</Filter>
     </None>
     <None Include="assets\shaders\FlatTexture.glsl">
+      <Filter>assets\shaders</Filter>
+    </None>
+    <None Include="assets\shaders\Particle.glsl">
       <Filter>assets\shaders</Filter>
     </None>
     <None Include="assets\shaders\Test.glsl">
