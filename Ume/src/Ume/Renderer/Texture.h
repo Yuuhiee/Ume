@@ -9,6 +9,7 @@ namespace Ume
 	{
 		ImageFormat Format = ImageFormat::RGBA;
 		TextureFilter Filter = TextureFilter::Nearest;
+		//TextureFilter Filter = TextureFilter::Linear;
 		TextureWrap Wrap = TextureWrap::Repeat;
 
 		bool GenMips = false;
@@ -37,15 +38,20 @@ namespace Ume
 		virtual uint32_t GetRendererID() const = 0;
 
 		virtual void SetData(void* data, uint32_t size) = 0;
-
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
 		virtual void Bind(int slot = 0) const = 0;
+		virtual std::vector<unsigned char> GetTextureData() const = 0;
+		virtual const TextureSpecification& Specification() const = 0;
 
 		virtual bool operator==(const Texture& other) const = 0;
+		virtual const std::string& GetFilePath() const = 0;
 	};
 
 	class Texture2D : public Texture
 	{
 	public:
+		virtual glm::vec4 Sample(const glm::vec2& texcoords) = 0;
+		virtual glm::vec4 Sample(const glm::vec3& direction) = 0;
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height, const TextureSpecification& specification = {});
 		static Ref<Texture2D> Create(const std::string& path, const TextureSpecification& specification = {});
 	};

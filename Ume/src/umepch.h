@@ -17,6 +17,8 @@
 
 #include "Ume/Debug/Instrumentor.h"
 
+#include "Ume/Util/Random.h"
+
 #ifdef UME_PLATFORM_WINDOWS
 #include <Windows.h>
 #endif // UME_PLATFORM_WINDOWS

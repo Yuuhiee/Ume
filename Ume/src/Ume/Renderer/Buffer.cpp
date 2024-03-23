@@ -23,7 +23,7 @@ namespace Ume
 		return nullptr;
 	}
 
-	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size)
+	Ref<VertexBuffer> VertexBuffer::Create(void* vertices, uint32_t size)
 	{
 		UME_PROFILE_FUNCTION();
 
@@ -40,7 +40,7 @@ namespace Ume
 		return nullptr;
 	}
 
-	Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t count)
+	Ref<IndexBuffer> IndexBuffer::Create(void* indices, uint32_t count)
 	{
 		UME_PROFILE_FUNCTION();
 

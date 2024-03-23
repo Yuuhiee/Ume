@@ -1,12 +1,17 @@
 #pragma once
-
 #include "glm/glm.hpp"
+
 namespace Ume
 {
-	class Camera
+	class CameraBase
 	{
 	public:
-		virtual const glm::mat4& GetViewProjectionMatrix() const = 0;
-		virtual void CalculateViewMatrix() = 0;
+		CameraBase() = default;
+		CameraBase(const glm::mat4& projection)
+			: m_Projection(projection) {}
+
+		const glm::mat4& GetProjection() const { return m_Projection; }
+	private:
+		glm::mat4 m_Projection = glm::mat4(1.0f);
 	};
 }

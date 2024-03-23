@@ -18,10 +18,14 @@ namespace Ume
 	class ParticleSystem
 	{
 	public:
+		uint32_t PoolSize;
 		ParticleSystem(uint32_t maxParticles = 1000);
 
 		void OnUpdate(Timestep ts);
-		void OnRender(const Camera& camera);
+		void OnRender(const OrthographicCamera& camera);
+		void OnRender(const glm::mat4& vp);
+
+		void Resize(uint32_t maxParticles);
 
 		void Emit(const ParticleProps& particleProps);
 	private:

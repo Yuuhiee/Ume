@@ -4,6 +4,7 @@
 #include "VertexArray.h"
 #include "Camera.h"
 #include "Shader.h"
+#include "Ume/Renderer/OrthographicCamera.h"
 
 namespace Ume
 {
@@ -11,10 +12,12 @@ namespace Ume
 	{
 	public:
 		static void Init();
-		static void StartScene(const Camera& camera);
+		static void SetPolygonMode(PolygonMode mode);
+		static void BeginScene(const glm::mat4& viewProjection);
 		static void EndScene();
 		static void EnableDepthTest(bool enable);
-		static void Submit(const Ref<VertexArray>& vertexArray, const Ref<Shader> shader, const glm::mat4 modelMatrix = glm::mat4(1.0f));
+		static void Submit(const Ref<VertexArray>& vertexArray);
+		static void Submit(const Ref<VertexArray>& vertexArray, const Ref<Shader> shader, const glm::mat4 modelMatrix);
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 		inline static const Ref<ShaderLibrary>& GetShaderLibrary() { return s_ShaderLibrary; }
 	public:

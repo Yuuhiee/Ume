@@ -12,26 +12,35 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\EditorLayer.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="src\ParticleSystem.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\EditorLayer.h">
+    <ClInclude Include="src\RayTracingLayer.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\ParticleSystem.cpp">
+    <ClCompile Include="src\EditorApp.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\EditorLayer.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\EditorApp.cpp">
+    <ClCompile Include="src\ParticleSystem.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RayTracingLayer.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\BatchQuad.glsl">
+      <Filter>assets\shaders</Filter>
+    </None>
+    <None Include="assets\shaders\Denoise.glsl">
       <Filter>assets\shaders</Filter>
     </None>
     <None Include="assets\shaders\FlatColor.glsl">
@@ -40,7 +49,19 @@
     <None Include="assets\shaders\FlatTexture.glsl">
       <Filter>assets\shaders</Filter>
     </None>
+    <None Include="assets\shaders\GBuffer.glsl">
+      <Filter>assets\shaders</Filter>
+    </None>
+    <None Include="assets\shaders\PBR.glsl">
+      <Filter>assets\shaders</Filter>
+    </None>
     <None Include="assets\shaders\Particle.glsl">
+      <Filter>assets\shaders</Filter>
+    </None>
+    <None Include="assets\shaders\PostProcess.glsl">
+      <Filter>assets\shaders</Filter>
+    </None>
+    <None Include="assets\shaders\Skybox.glsl">
       <Filter>assets\shaders</Filter>
     </None>
     <None Include="assets\shaders\Test.glsl">
@@ -49,5 +70,6 @@
     <None Include="assets\shaders\Texture.glsl">
       <Filter>assets\shaders</Filter>
     </None>
+    <None Include="assets\shaders\Select.glsl" />
   </ItemGroup>
 </Project>

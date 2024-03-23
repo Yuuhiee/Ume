@@ -21,7 +21,7 @@ namespace Ume
 	{
 	public:
 		OrthographicCameraController() = default;
-		OrthographicCameraController(float aspectRatio, bool rotable = false);
+		OrthographicCameraController(float aspectRatio, float zoomLevel = 1.0f, bool rotable = false);
 		~OrthographicCameraController() {};
 
 		virtual void OnUpdate(Timestep ts) override;
@@ -29,7 +29,7 @@ namespace Ume
 		
 		void Resize(uint32_t width, uint32_t height);
 	public:
-		inline virtual const Camera& GetCamera() const override { return m_Camera; }
+		inline const OrthographicCamera& GetCamera() const{ return m_Camera; }
 		inline const OrthographicCameraBounds& GetBounds() const { return m_Bound; }
 		inline const glm::vec3& GetPosition() const { return m_CameraPosition; }
 	private:

@@ -6,8 +6,15 @@
 #include "Ume/Core/KeyCodes.h"
 #include "Ume/Core/Timestep.h"
 
+#include "Ume/Util/Random.h"
+#include "Ume/Renderer/RayTracing/AssetManager.h"
+
 #include "GLFW/glfw3.h"
 
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#include <Windows.h>
+#include <commdlg.h>
 
 namespace Ume
 {
@@ -25,6 +32,8 @@ namespace Ume
         PushOverlay(m_ImGuiLayer);
 
         Renderer::Init();
+        Random::Init();
+        AssetManager::Init();
     }
 
     void Application::Run()
@@ -110,5 +119,64 @@ namespace Ume
             return true;
         }
         return false;
+    }
+
+    std::string Application::OpenFile(const std::string& filter) const
+    {
+
+        OPENFILENAMEA ofn;       // common dialog box structure
+        CHAR szFile[260] = { 0 };       // if using TCHAR macros
+
+        // Initialize OPENFILENAME
+        ZeroMemory(&ofn, sizeof(OPENFILENAME));
+        ofn.lStructSize = sizeof(OPENFILENAME);
+        ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetNativeWindow());
+        ofn.lpstrFile = szFile;
+        ofn.nMaxFile = sizeof(szFile);
+        ofn.lpstrFilter = "All\0*.*\0";
+        ofn.nFilterIndex = 1;
+        ofn.lpstrFileTitle = NULL;
+        ofn.nMaxFileTitle = 0;
+        ofn.lpstrInitialDir = NULL;
+        ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+        if (GetOpenFileNameA(&ofn) == TRUE)
+        {
+            return ofn.lpstrFile;
+        }
+        return std::string();
+    }
+
+    std::string Application::SaveFile(const std::vector<std::string>& extensions, const std::string& defaultName) const
+    {
+        OPENFILENAMEA ofn;       // common dialog box structure
+        CHAR szFile[260] = { 0 };       // if using TCHAR macros
+
+        if (!defaultName.empty())
+            strncpy(szFile, defaultName.c_str(), sizeof(szFile));
+
+        std::string filter = "All Files (*.*)\0*.*\0";
+        for (const auto& ext : extensions)
+            filter += ext + "\0";
+        filter += "\0";
+
+        // Initialize OPENFILENAME
+        ZeroMemory(&ofn, sizeof(OPENFILENAME));
+        ofn.lStructSize = sizeof(OPENFILENAME);
+        ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetNativeWindow());
+        ofn.lpstrFile = szFile;
+        ofn.nMaxFile = sizeof(szFile);
+        ofn.lpstrFilter = filter.c_str();
+        ofn.nFilterIndex = 1;
+        ofn.lpstrFileTitle = NULL;
+        ofn.nMaxFileTitle = 0;
+        ofn.lpstrInitialDir = NULL;
+        ofn.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
+
+        if (GetSaveFileNameA(&ofn) == TRUE)
+        {
+            return ofn.lpstrFile;
+        }
+        return std::string();
     }
 }

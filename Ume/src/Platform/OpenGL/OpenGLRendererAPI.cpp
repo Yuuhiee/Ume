@@ -17,8 +17,24 @@ namespace Ume
 	void OpenGLRendererAPI::Clear()
 	{
 		UME_PROFILE_FUNCTION();
-
+		glClearDepth(1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
+	void OpenGLRendererAPI::SetPolygonMode(PolygonMode mode)
+	{
+		GLenum glMode = GL_FILL;
+		switch (mode)
+		{
+		case Ume::PolygonMode::Point: glMode = GL_POINT;
+			break;
+		case Ume::PolygonMode::Line: glMode = GL_LINE;
+			break;
+		case Ume::PolygonMode::Fill: glMode = GL_FILL;
+			break;
+		}
+		
+		glPolygonMode(GL_FRONT, glMode);
 	}
 
 	void OpenGLRendererAPI::SetClearColor(float r, float g, float b, float a)
@@ -50,5 +66,10 @@ namespace Ume
 			glEnable(GL_DEPTH_TEST);
 		else
 			glDisable(GL_DEPTH_TEST);
+	}
+
+	void OpenGLRendererAPI::SetDepthTestFunc(DepthTestFunc func)
+	{
+		glDepthFunc(GL_NEVER + (int)func);
 	}
 }

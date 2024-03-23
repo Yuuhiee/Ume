@@ -12,5 +12,6 @@ namespace Ume
         virtual float GetMouseXImpl() override;
         virtual float GetMouseYImpl() override;
         virtual std::pair<float, float> GetMousePositionImpl() override;
+        virtual void SetCursorModeImpl(CursorMode mode) override;
     };
 }

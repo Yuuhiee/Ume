@@ -20,6 +20,8 @@ IncludeDir["Glad"] = "Ume/vendor/Glad/include"
 IncludeDir["ImGui"] = "Ume/vendor/imgui"
 IncludeDir["glm"] = "Ume/vendor/glm"
 IncludeDir["stb_image"] = "Ume/vendor/stb_image"
+IncludeDir["entt"] = "Ume/vendor/entt/include"
+IncludeDir["assimp"] = "Ume/vendor/assimp/include"
 
 group "Dependencies"
 	include "Ume/vendor/GLFW"
@@ -58,7 +60,9 @@ project "Ume"
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
-		"%{IncludeDir.stb_image}"
+		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.assimp}"
 	}
 
 	defines
@@ -174,12 +178,15 @@ project "Editor"
 		"Ume/src",
 		"Ume/vendor",
 		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.assimp}"
 	}
 
 	links
 	{
-		"Ume"
+		"Ume",
+        "Ume/vendor/assimp/win64/assimp.lib"
 	}
 
 	filter "system:windows"

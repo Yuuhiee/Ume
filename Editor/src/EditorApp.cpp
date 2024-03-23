@@ -6,6 +6,7 @@
 #include "imgui/imgui.h"
 
 #include "EditorLayer.h"
+#include "RayTracingLayer.h"
 
 namespace Ume
 {
@@ -15,7 +16,8 @@ namespace Ume
 		UmeEditor()
 			: Application("Ume Editor")
 		{
-			PushLayer(new EditorLayer());
+			//PushLayer(new EditorLayer());
+			PushLayer(new RayTracingLayer());
 		}
 		~UmeEditor() {}
 	};

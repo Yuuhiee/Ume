@@ -40,4 +40,10 @@ namespace Ume
 		glfwGetCursorPos(window, &xpos, &ypos);
 		return { (float)xpos, (float)ypos };
 	}
+
+	void WindowsInput::SetCursorModeImpl(CursorMode mode)
+	{
+		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL + (int)mode);
+	}
 }

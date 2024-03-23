@@ -76,9 +76,9 @@ void ParticleSystem::OnUpdate(Timestep ts)
 	}
 }
 
-void ParticleSystem::OnRender(const Camera& camera)
+void ParticleSystem::OnRender(const CameraBase& camera)
 {
-	Renderer2D::StartScene(camera);
+	Renderer2D::BeginScene(camera);
 	for (auto& particle : m_ParticlePool)
 	{
 		if (!particle.Active)

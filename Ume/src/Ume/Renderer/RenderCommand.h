@@ -12,6 +12,11 @@ namespace Ume
 			s_RendererAPI->Init();
 		}
 
+		inline static void SetPolygonMode(PolygonMode mode)
+		{
+			s_RendererAPI->SetPolygonMode(mode);
+		}
+
 		inline static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 		{
 			s_RendererAPI->SetViewport(x, y, width, height);
@@ -35,6 +40,11 @@ namespace Ume
 		inline static void EnableDepthTest(bool enable)
 		{
 			s_RendererAPI->EnableDepthTest(enable);
+		}
+
+		inline static void SetDepthTestFunc(DepthTestFunc func)
+		{
+			s_RendererAPI->SetDepthTestFunc(func);
 		}
 	private:
 		static Scope<RendererAPI> s_RendererAPI;

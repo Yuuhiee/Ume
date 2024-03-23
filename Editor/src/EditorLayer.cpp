@@ -9,13 +9,19 @@ namespace Ume
 
 	static Ref<SubTexture2D> s_SubTexture;
 
+	static int s_PoolSize = 6000;
+
+	static Timestep timestep = 0.0f;
+
+	static Entity tempSquare;
+
 	EditorLayer::EditorLayer()
 		: Layer("EditorLayer")
 	{
 		auto& window = Application::Get().GetWindow();
 		window.SetVSync(false);
 
-		m_CameraController = OrthographicCameraController((float)window.GetWidth() / (float)window.GetHeight());
+		m_CameraController = OrthographicCameraController((float)window.GetWidth() / (float)window.GetHeight(), 3.0f);
 		m_Texture = Texture2D::Create("assets/textures/Checkerboard.png", { ImageFormat::RGB });
 		m_SpiriteSheet = Texture2D::Create("assets/textures/RPGpack_sheet_2X.png");
 		s_SubTexture = SubTexture2D::CreateFromTexture2D(m_SpiriteSheet, { 128, 128 }, { 7, 6 });
@@ -25,6 +31,49 @@ namespace Ume
 		FramebufferDescription description = { window.GetWidth(), window.GetHeight() };
 		description.ColorAttachments = { textureInfo, textureInfo };
 		m_Framebuffer = Framebuffer::Create(description);
+
+		m_Viewport.SetCallback(Viewport::CallbackType::Render, [&](Viewport* viewport, void* data)
+		{
+			ImGui::Image((void*)m_Framebuffer->GetColorAttachments()[0]->GetRendererID(), *(ImVec2*)data, { 0, 1 }, { 1, 0 });
+		});
+		m_Viewport.SetCallback(Viewport::CallbackType::Resize, [&](Viewport* viewport, void* data)
+		{
+			auto size = *(ImVec2*)data;
+			m_Framebuffer->Resize(size.x, size.y);
+			m_CameraController.Resize(size.x, size.y);
+		});
+		m_Viewport.SetCallback(Viewport::CallbackType::MouseButtonPress, [&](Viewport* viewport, void* data)
+		{
+			auto& info = *(Viewport::MouseClickInfo*)data;
+			if (info.Buttons & MouseButtonFlagBits::Left)
+			{
+				float x = (float)info.Position.x;
+				float y = (float)info.Position.y;
+				auto width = viewport->GetSize().x;
+				auto height = viewport->GetSize().y;
+
+				auto bounds = m_CameraController.GetBounds();
+				auto pos = m_CameraController.GetPosition();
+				x = (x / width) * bounds.GetWidth() - bounds.GetWidth() * 0.5f;
+				y = bounds.GetHeight() * 0.5f - (y / height) * bounds.GetHeight();
+				m_Particle.Position = { x + pos.x, y + pos.y };
+				for (int i = 0; i < 5; i++)
+					m_ParticleSystem.Emit(m_Particle);
+			}
+		});
+
+		m_Scene = CreateRef<ECS>();
+		m_SquareEntity = m_Scene->CreateEntity();
+		m_SquareEntity.AddComponent<SpriteRenderComponent>(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+		m_SquareEntity.GetComponent<Transform>().ModelMatrix = glm::translate(glm::mat4(1.0f), { 0.0f, 0.0f, 0.0f });
+
+		tempSquare = m_Scene->CreateEntity();
+		tempSquare.AddComponent<SpriteRenderComponent>(glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
+		tempSquare.GetComponent<Transform>().Position = { 1.0f, 0.0f, 0.0f };
+		tempSquare.GetComponent<Transform>().UpdateTransform();
+
+		m_CameraEntity = m_Scene->CreateEntity("Entity_Camera");
+		m_CameraEntity.AddComponent<CameraComponent>(m_CameraController.GetCamera().GetProjection(), true);
 	}
 
 	void EditorLayer::OnAttach()
@@ -35,180 +84,168 @@ namespace Ume
 		m_Particle.LifeTime = 1.0f;
 		m_Particle.Velocity = { 0.0f, 0.0f };
 		m_Particle.VelocityVariation = { 10.0f, 8.0f };
-		m_Particle.Dampping = 0.03f;
+		m_Particle.Dampping = 6.0f;
 		m_Particle.Position = { 0.0f, 0.0f };
 	}
 
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
-		UME_PROFILE_FUNCTION();
+		timestep = ts;
+		m_CameraController.OnUpdate(ts);
+		m_CameraEntity.GetComponent<CameraComponent>().Camera = m_CameraController.GetCamera().GetProjectionMatrix();
 
+		m_Framebuffer->Bind();
+		RenderCommand::SetClearColor(0.1f, 0.1f, 0.11f, 1.0f);
+		RenderCommand::Clear();
 		{
-			UME_PROFILE_SCOPE("CameraController::OnUpdate");
-			m_CameraController.OnUpdate(ts);
-		}
-
-		{
-			UME_PROFILE_SCOPE("Render Prepare");
-			m_Framebuffer->Bind();
-			RenderCommand::SetClearColor(0.1f, 0.1f, 0.11f, 1.0f);
-			RenderCommand::Clear();
-		}
-
-		{
-			UME_PROFILE_SCOPE("Render Draw");
-
-			static float angle = 0.0f;
-			angle += ts * 50.0f;
-
-			Renderer2D::StartScene(m_CameraController.GetCamera());
-			//Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.02f }, { 5.0f, 5.0f }, 0.0f, m_Texture);
-			Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f }, angle, { 0.2f, 0.3f, 0.8f, 1.0f });
-
-			for (int y = -5; y <= 5; y++)
-			{
-				for (int x = -5; x <= 5; x++)
-				{
-					glm::vec3 position = { x * 0.5f, y * 0.5f, 0.05f };
-					glm::vec4 color = { (x + 5.0f) / 10.0f, 0.5f,  (y + 5.0f) / 10.0f, 0.9f };
-					Renderer2D::DrawQuad(position, { 0.45f, 0.45f }, 0, color);
-				}
-			}
-			Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.06f }, { 5.0f, 5.0f }, 0.0f, m_SpiriteSheet);
-			Renderer2D::DrawQuad({ 1.0f, 1.0f, 0.07f }, { 5.0f, 5.0f }, 0.0f, s_SubTexture);
+			//static float angle = 0.0f;
+			//angle += ts * 50.0f;
+			//Renderer2D::BeginScene(m_CameraController.GetCamera());
+			//Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f }, angle, { 0.2f, 0.3f, 0.8f, 1.0f });
+			//
+			//for (int y = -5; y <= 5; y++)
+			//{
+			//	for (int x = -5; x <= 5; x++)
+			//	{
+			//		glm::vec3 position = { x * 0.5f, y * 0.5f, 0.05f };
+			//		glm::vec4 color = { (x + 5.0f) / 10.0f, 0.5f,  (y + 5.0f) / 10.0f, 0.9f };
+			//		Renderer2D::DrawQuad(position, { 0.45f, 0.45f }, 0, color);
+			//	}
+			//}
 			//Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.06f }, { 5.0f, 5.0f }, 0.0f, m_SpiriteSheet);
-			Renderer2D::EndScene();
+			//Renderer2D::DrawQuad({ 1.0f, 1.0f, 0.07f }, { 5.0f, 5.0f }, 0.0f, s_SubTexture);
+			//Renderer2D::EndScene();
+			//
+			//if (m_ParticleSystem.PoolSize != s_PoolSize) m_ParticleSystem.Resize(s_PoolSize);
+			//m_ParticleSystem.OnUpdate(ts);
+			//m_ParticleSystem.OnRender(m_CameraEntity.GetComponent<CameraComponent>().Camera.GetProjection());
 
-			if (Input::IsMouseButtonPressed(UME_MOUSE_BUTTON_1))
-			{
-				auto [x, y] = Input::GetMousePosition();
-				auto& window = Application::Get().GetWindow();
-				auto width = window.GetWidth();
-				auto height = window.GetHeight();
-
-				auto bounds = m_CameraController.GetBounds();
-				auto pos = m_CameraController.GetPosition();
-				x = (x / width) * bounds.GetWidth() - bounds.GetWidth() * 0.5f;
-				y = bounds.GetHeight() * 0.5f - (y / height) * bounds.GetHeight();
-				m_Particle.Position = { x + pos.x, y + pos.y };
-				for (int i = 0; i < 5; i++)
-					m_ParticleSystem.Emit(m_Particle);
-			}
-
-			m_ParticleSystem.OnUpdate(ts);
-			m_ParticleSystem.OnRender(m_CameraController.GetCamera());
-
-			m_Framebuffer->Unbind();
+			m_Scene->OnUpdate(ts);
 		}
+		m_Framebuffer->Unbind();
 	}
 
 	void EditorLayer::OnEvent(Event& e)
 	{
-		m_CameraController.OnEvent(e);
-		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)
-			{
-				switch (e.GetKeyCode())
-				{
-				case UME_KEY_RIGHT: s_SpiritPos.x++;
-				case UME_KEY_UP: s_SpiritPos.y++;
-				}
-				return false;
-			});
-	}
-
-	static void ShowDockSpace(bool* p_open)
-	{
-		static bool opt_fullscreen_persistant = true;
-		static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_None;
-		bool opt_fullscreen = opt_fullscreen_persistant;
-
-		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-		// because it would be confusing to have two docking targets within each others.
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-		if (opt_fullscreen)
+		if (m_Viewport.IsHovered())
 		{
-			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos(viewport->Pos);
-			ImGui::SetNextWindowSize(viewport->Size);
-			ImGui::SetNextWindowViewport(viewport->ID);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+			m_CameraController.OnEvent(e);
 		}
-
-		// When using ImGuiDockNodeFlags_PassthruDockspace, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
-		if (opt_flags & ImGuiDockNodeFlags_PassthruDockspace)
-			window_flags |= ImGuiWindowFlags_NoBackground;
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		ImGui::Begin("DockSpace Demo", p_open, window_flags);
-		ImGui::PopStyleVar();
-
-		if (opt_fullscreen)
-			ImGui::PopStyleVar(2);
-
-		// Dockspace
-		ImGuiIO& io = ImGui::GetIO();
-		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-		{
-			ImGuiID dockspace_id = ImGui::GetID("MyDockspace");
-			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), opt_flags);
-		}
-
-		if (ImGui::BeginMenuBar())
-		{
-			if (ImGui::BeginMenu("File"))
-			{
-				// Disabling fullscreen would allow the window to be moved to the front of other windows, 
-				// which we can't undo at the moment without finer window depth/z control.
-				//ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
-
-				if (ImGui::MenuItem("Exit")) Application::Get().Close();
-				ImGui::EndMenu();
-			}
-
-			ImGui::EndMenuBar();
-		}
-
-		ImGui::End();
 	}
 
 	void EditorLayer::OnImGuiRender()
 	{
 		static bool open = true;
-		ShowDockSpace(&open);
+		GUI::ShowDockSpace(&open);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
-		ImGui::Begin("Viewport");
-		{
-			auto size = ImGui::GetContentRegionAvail();
-			glm::uvec2 viewportSize = { static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y) };
-			if (viewportSize.x != m_ViewportSize.x || viewportSize.y != m_ViewportSize.y)
-			{
-				m_ViewportSize = viewportSize;
-				m_Framebuffer->Resize(viewportSize.x, viewportSize.y);
-				m_CameraController.Resize(viewportSize.x, viewportSize.y);
-			}
-			ImGui::Image((void*)m_Framebuffer->GetColorAttachments()[0]->GetRendererID(), size, { 0, 1 }, { 1, 0 }); 
-		}
-		ImGui::End();
+		m_Viewport.Render();
 		ImGui::PopStyleVar();
 
-		ImGui::Begin("Infomations");
 		Renderer2D::Stastistics stats = Renderer2D::GetStastistics();
+		ImGui::Begin("Infomations");
+		ImGui::Text("Time: %2fms", timestep.GetMilliseconds());
 		ImGui::Text("DrawCalls: %d", stats.DrawCalls);
 		ImGui::Text("QuadCount: %d", stats.QuadCount);
 		ImGui::Image((void*)m_Texture->GetRendererID(), { 64, 64 });
-
 		ImGui::End();
 		Renderer2D::ResetStats();
 
 		ImGui::Begin("Particle");
 		ImGui::DragFloat2("Start Velocity", glm::value_ptr(m_Particle.Velocity), 0.2f);
 		ImGui::DragFloat2("Velocity Range", glm::value_ptr(m_Particle.VelocityVariation), 0.2f);
+		ImGui::DragInt("Pool Size", &s_PoolSize, 10.0f, 0);
 		ImGui::Checkbox("Gravity", &m_Particle.Gravity);
+		
+		if (m_CameraEntity)
+		{
+			ImGui::Separator();
+
+			{
+				ImGui::PushID("Square");
+				auto& transform = m_SquareEntity.GetComponent<Transform>();
+				bool flag = false;
+				flag |= GUI::Vec3Controller("Position", transform.Position);
+				flag |= GUI::Vec3Controller("Rotation", transform.EulerRotation);
+				flag |= GUI::Vec3Controller("Scale", transform.Scale, 1.0f);
+
+				if (flag)
+				{
+					transform.UpdateTransform();
+				}
+				ImGui::PopID();
+			}
+			{
+				ImGui::Separator();
+				ImGui::PushID("Camera");
+				auto& transform = m_CameraEntity.GetComponent<Transform>();
+				bool flag = false;
+				flag |= GUI::Vec3Controller("Position", transform.Position);
+				flag |= GUI::Vec3Controller("Rotation", transform.EulerRotation);
+				if (flag)
+				{
+					transform.UpdateTransform();
+				}
+				ImGui::PopID();
+			}
+		}
+
+		////////////
+		std::string label = "Position";
+		static glm::vec3 values = { 1.0f, 1.0f, 1.0f };
+
 		ImGui::End();
 	}
 }
+
+
+
+
+
+
+
+//void EditorLayer::OnUpdate(Timestep ts)
+//{
+//	UME_PROFILE_FUNCTION();
+//
+//	//{
+//	//	UME_PROFILE_SCOPE("CameraController::OnUpdate");
+//	//	m_CameraController.OnUpdate(ts);
+//	//}
+//
+//	{
+//		UME_PROFILE_SCOPE("Render Prepare");
+//		m_Framebuffer->Bind();
+//		RenderCommand::SetClearColor(0.1f, 0.1f, 0.11f, 1.0f);
+//		RenderCommand::Clear();
+//	}
+//
+//	//{
+//	//	UME_PROFILE_SCOPE("Render Draw");
+//	//
+//	//	static float angle = 0.0f;
+//	//	angle += ts * 50.0f;
+//	//
+//	//	Renderer2D::BeginScene(m_CameraController.GetCamera());
+//	//	Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f }, angle, { 0.2f, 0.3f, 0.8f, 1.0f });
+//	//	
+//	//	for (int y = -5; y <= 5; y++)
+//	//	{
+//	//		for (int x = -5; x <= 5; x++)
+//	//		{
+//	//			glm::vec3 position = { x * 0.5f, y * 0.5f, 0.05f };
+//	//			glm::vec4 color = { (x + 5.0f) / 10.0f, 0.5f,  (y + 5.0f) / 10.0f, 0.9f };
+//	//			Renderer2D::DrawQuad(position, { 0.45f, 0.45f }, 0, color);
+//	//		}
+//	//	}
+//	//	Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.06f }, { 5.0f, 5.0f }, 0.0f, m_SpiriteSheet);
+//	//	Renderer2D::DrawQuad({ 1.0f, 1.0f, 0.07f }, { 5.0f, 5.0f }, 0.0f, s_SubTexture);
+//	//	Renderer2D::EndScene();
+//	//}
+//
+//	m_Scene->OnUpdate(ts);
+//
+//	//m_ParticleSystem.OnUpdate(ts);
+//	//m_ParticleSystem.OnRender(m_CameraController.GetCamera());
+//	m_Framebuffer->Unbind();
+//}

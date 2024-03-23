@@ -21,7 +21,7 @@ public:
 	ParticleSystem(uint32_t maxParticles = 1000);
 
 	void OnUpdate(Timestep ts);
-	void OnRender(const Camera& camera);
+	void OnRender(const CameraBase& camera);
 
 	void Emit(const ParticleProps& particleProps);
 private:

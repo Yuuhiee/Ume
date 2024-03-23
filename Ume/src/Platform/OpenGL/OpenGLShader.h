@@ -24,6 +24,7 @@ namespace Ume
 		virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
+		virtual void SetMat3(const std::string& name, const glm::mat3& value) override;
 
 		inline virtual const std::string& GetName() const override { return m_Name; }
 		virtual inline uint32_t GetRendererID() const override { return m_RendererID; }

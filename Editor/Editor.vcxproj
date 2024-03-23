@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>UME_PLATFORM_WINDOWS;UME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Ume\src;..\Ume\vendor;..\Ume\vendor\spdlog\include;..\Ume\vendor\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Ume\src;..\Ume\vendor;..\Ume\vendor\spdlog\include;..\Ume\vendor\glm;..\Ume\vendor\entt\include;..\Ume\vendor\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -88,6 +88,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>..\Ume\vendor\assimp\win64\assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -95,7 +96,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>UME_PLATFORM_WINDOWS;UME_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Ume\src;..\Ume\vendor;..\Ume\vendor\spdlog\include;..\Ume\vendor\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Ume\src;..\Ume\vendor;..\Ume\vendor\spdlog\include;..\Ume\vendor\glm;..\Ume\vendor\entt\include;..\Ume\vendor\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -108,6 +109,7 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>..\Ume\vendor\assimp\win64\assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
@@ -115,7 +117,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>UME_PLATFORM_WINDOWS;UME_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Ume\src;..\Ume\vendor;..\Ume\vendor\spdlog\include;..\Ume\vendor\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Ume\src;..\Ume\vendor;..\Ume\vendor\spdlog\include;..\Ume\vendor\glm;..\Ume\vendor\entt\include;..\Ume\vendor\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -128,22 +130,31 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>..\Ume\vendor\assimp\win64\assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\ParticleSystem.h" />
     <ClInclude Include="src\EditorLayer.h" />
+    <ClInclude Include="src\ParticleSystem.h" />
+    <ClInclude Include="src\RayTracingLayer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\ParticleSystem.cpp" />
-    <ClCompile Include="src\EditorLayer.cpp" />
     <ClCompile Include="src\EditorApp.cpp" />
+    <ClCompile Include="src\EditorLayer.cpp" />
+    <ClCompile Include="src\ParticleSystem.cpp" />
+    <ClCompile Include="src\RayTracingLayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\BatchQuad.glsl" />
+    <None Include="assets\shaders\Denoise.glsl" />
     <None Include="assets\shaders\FlatColor.glsl" />
     <None Include="assets\shaders\FlatTexture.glsl" />
+    <None Include="assets\shaders\GBuffer.glsl" />
+    <None Include="assets\shaders\PBR.glsl" />
     <None Include="assets\shaders\Particle.glsl" />
+    <None Include="assets\shaders\PostProcess.glsl" />
+    <None Include="assets\shaders\Select.glsl" />
+    <None Include="assets\shaders\Skybox.glsl" />
     <None Include="assets\shaders\Test.glsl" />
     <None Include="assets\shaders\Texture.glsl" />
   </ItemGroup>

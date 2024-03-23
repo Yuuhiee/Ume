@@ -1,6 +1,7 @@
 #pragma once
 
 #include "glm/glm.hpp"
+#include "Texture.h"
 
 namespace Ume
 {
@@ -19,6 +20,12 @@ namespace Ume
 		virtual void SetFloat3(const std::string& name, const glm::vec3& value) = 0;
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) = 0;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) = 0;
+		virtual void SetMat3(const std::string& name, const glm::mat3& value) = 0;
+		void SetTexture(const std::string& name, const Ref<Texture2D>& texture, int slot = 0)
+		{
+			texture->Bind(slot);
+			SetInt(name, slot);
+		}
 
 		virtual uint32_t GetRendererID() const = 0;
 		virtual const std::string& GetName() const = 0;

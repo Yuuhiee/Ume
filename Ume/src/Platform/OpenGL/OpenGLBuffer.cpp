@@ -18,7 +18,7 @@ namespace Ume
 		glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 	}
 
-	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size)
+	OpenGLVertexBuffer::OpenGLVertexBuffer(void* vertices, uint32_t size)
 	{
 		UME_PROFILE_FUNCTION();
 
@@ -60,7 +60,7 @@ namespace Ume
 	/////////////////////// Index Buffer ///////////////////////
 	////////////////////////////////////////////////////////////
 
-	OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t count) : m_Count(count)
+	OpenGLIndexBuffer::OpenGLIndexBuffer(void* indices, uint32_t count) : m_Count(count)
 	{
 		UME_PROFILE_FUNCTION();
 

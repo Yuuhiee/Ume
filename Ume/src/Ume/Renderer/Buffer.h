@@ -94,7 +94,7 @@ namespace Ume
 		virtual void SetData(const void* data, uint32_t size) = 0;
 
 		static Ref<VertexBuffer> Create(uint32_t size);
-		static Ref<VertexBuffer> Create(float* vertices, uint32_t size);
+		static Ref<VertexBuffer> Create(void* vertices, uint32_t size);
 	};
 
 	class IndexBuffer
@@ -104,6 +104,6 @@ namespace Ume
 		virtual void Bind() = 0;
 		virtual void Unbind() = 0;
 		virtual uint32_t GetCount() = 0;
-		static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t count);
+		static Ref<IndexBuffer> Create(void* indices, uint32_t count);
 	};
 }

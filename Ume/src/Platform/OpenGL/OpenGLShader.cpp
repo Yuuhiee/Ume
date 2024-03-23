@@ -181,7 +181,7 @@ namespace Ume
 		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
 		if (location == -1)
 		{
-			UME_CORE_WARN("Uniform \"{}\" not found or have been optimized.", name);
+			//UME_CORE_WARN("Uniform \"{}\" not found or have been optimized.", name);
 			return location;
 		}
 
@@ -249,5 +249,12 @@ namespace Ume
 		UME_PROFILE_FUNCTION();
 
 		glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
+	}
+
+	void OpenGLShader::SetMat3(const std::string& name, const glm::mat3& value)
+	{
+		UME_PROFILE_FUNCTION();
+
+		glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value));
 	}
 }

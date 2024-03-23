@@ -79,7 +79,7 @@ void Sandbox3D::OnUpdate(Timestep ts)
 	RenderCommand::SetClearColor(0.1f, 0.1f, 0.11f, 1.f);
 	RenderCommand::Clear();
 
-	Renderer::StartScene(m_PerspectiveCameraController.GetCamera());
+	Renderer::BeginScene(m_PerspectiveCameraController.GetCamera());
 
 	//m_Camera->SetRotation(m_Camera->GetRotation() + glm::vec3(0.0f, 0.0f, 1.0f));
 

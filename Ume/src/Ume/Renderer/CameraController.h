@@ -13,7 +13,6 @@ namespace Ume
 
 		virtual void OnUpdate(Timestep ts) = 0;
 		virtual void OnEvent(Event& e) = 0;
-		virtual const Camera& GetCamera() const = 0;
 	};
 }
 

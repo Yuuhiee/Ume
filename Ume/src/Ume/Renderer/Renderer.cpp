@@ -18,9 +18,14 @@ namespace Ume
 		Renderer2D::Init();
 	}
 
-	void Renderer::StartScene(const Camera& camera)
+	void Renderer::SetPolygonMode(PolygonMode mode)
 	{
-		s_SceneData->ViewProjection = camera.GetViewProjectionMatrix();
+		RenderCommand::SetPolygonMode(mode);
+	}
+
+	void Renderer::BeginScene(const glm::mat4& viewProjection)
+	{
+		s_SceneData->ViewProjection = viewProjection;
 	}
 
 	void Renderer::EndScene()
@@ -30,6 +35,13 @@ namespace Ume
 	void Renderer::EnableDepthTest(bool enable)
 	{
 		RenderCommand::EnableDepthTest(enable);
+	}
+
+	void Renderer::Submit(const Ref<VertexArray>& vertexArray)
+	{
+		vertexArray->Bind();
+		vertexArray->GetIndexBuffer()->Bind();
+		RenderCommand::DrawIndexed(vertexArray);
 	}
 
 	void Renderer::Submit(const Ref<VertexArray>& vertexArray, const Ref<Shader> shader, const glm::mat4 modelMatrix)

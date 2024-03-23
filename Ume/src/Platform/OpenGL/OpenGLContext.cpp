@@ -20,6 +20,9 @@ namespace Ume
         int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
         UME_CORE_ASSERT(status, "Failed to initialize Glad!");
 
+        glLineWidth(2);
+        glPointSize(3);
+
         UME_CORE_INFO("OpenGL Info:");
         UME_CORE_INFO("    Vendor  |{}", (const char *)glGetString(GL_VENDOR));
         UME_CORE_INFO("    Renderer|{}", (const char *)glGetString(GL_RENDERER));

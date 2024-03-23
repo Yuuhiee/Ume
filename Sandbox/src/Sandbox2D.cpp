@@ -62,7 +62,7 @@ void Sandbox2D::OnUpdate(Timestep ts)
 		static float angle = 0.0f;
 		angle += ts * 50.0f;
 
-		Renderer2D::StartScene(m_CameraController.GetCamera());
+		Renderer2D::BeginScene(m_CameraController.GetCamera());
 		//Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.02f }, { 5.0f, 5.0f }, 0.0f, m_Texture);
 		Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f }, angle, { 0.2f, 0.3f, 0.8f, 1.0f });
 

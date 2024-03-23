@@ -1,9 +1,6 @@
 #pragma once
 
 #include "Ume/Core/Layer.h"
-#include "Ume/Events/MouseEvent.h"
-#include "Ume/Events/KeyEvent.h"
-#include "Ume/Events/ApplicationEvent.h"
 
 namespace Ume
 {
@@ -19,8 +16,8 @@ namespace Ume
 
 		void Begin();
 		void End();
+
 	private:
 		float m_Time = 0.0f;
 	};
-
 }

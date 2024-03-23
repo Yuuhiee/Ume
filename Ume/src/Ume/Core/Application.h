@@ -26,6 +26,8 @@ namespace Ume
         inline Window &GetWindow() { return *m_Window; }
         inline static Application &Get() { return *s_Instance; }
 
+        std::string OpenFile(const std::string& filter) const;
+        std::string SaveFile(const std::vector<std::string>& extensions, const std::string& defaultName) const;
     private:
         ImGuiLayer *m_ImGuiLayer;
         LayerStack m_LayerStack;

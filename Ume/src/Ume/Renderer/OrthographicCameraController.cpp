@@ -6,8 +6,9 @@
 
 namespace Ume
 {
-    OrthographicCameraController::OrthographicCameraController(float aspectRatio, bool rotable)
+    OrthographicCameraController::OrthographicCameraController(float aspectRatio, float zoomLevel, bool rotable)
 		: m_AspectRatio(aspectRatio),
+		  m_ZoomLevel(zoomLevel),
 		  m_Rotation(rotable),
 		  m_Camera(-m_AspectRatio * m_ZoomLevel, m_AspectRatio* m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel),
 		  m_Bound({ -m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel })

@@ -2,6 +2,7 @@
 
 #include "Ume/Core/Base.h"
 #include "spdlog/spdlog.h"
+#include <exception>
 
 namespace Ume
 {
@@ -32,4 +33,12 @@ namespace Ume
 #define UME_WARN(...)			::Ume::Log::GetClientLogger()->warn(__VA_ARGS__)
 #define UME_ERROR(...)			::Ume::Log::GetClientLogger()->error(__VA_ARGS__)
 #define UME_FATAL(...)			::Ume::Log::GetClientLogger()->critical(__VA_ARGS__)
-
+#define UME_TRY_CATCH(code) \
+	try \
+	{ \
+		code \
+	} \
+	catch (std::exception& e) \
+	{ \
+		UME_FATAL(e.what()); \
+	} \
