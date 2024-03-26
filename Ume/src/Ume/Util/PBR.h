@@ -7,6 +7,8 @@ namespace Ume
 	class PBR
 	{
 	public:
+		static void Init();
+
 		static float Dot(const glm::vec3& a, const glm::vec3& b, float min = 0.0f)
 		{
 			return std::max(glm::dot(a, b), min);
@@ -83,6 +85,7 @@ namespace Ume
 		}
 
 		static glm::vec3 BRDF(const glm::vec3& albedo, float roughness, float metallic, const glm::vec3& N, const glm::vec3& V, const glm::vec3& L);
+		static glm::vec3 BTDF(const glm::vec3& albedo, float roughness, float metallic, float eta, const glm::vec3& N, const glm::vec3& I, const glm::vec3& O);
 		static glm::vec3 BSDF(const glm::vec3& albedo, float roughness, float metallic, float eta, const glm::vec3& N, const glm::vec3& V, const glm::vec3& L);
 	};
 }

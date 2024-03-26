@@ -1,9 +1,39 @@
 #include "umepch.h"
 #include "PBR.h"
-
+#include "Ume/Renderer/Texture.h"
 namespace Ume
 {
-	glm::vec3 PBR::BRDF(const glm::vec3& albedo, float roughness, float metallic, const glm::vec3& N, const glm::vec3& V, const glm::vec3& L)
+    static Ref<Texture2D> EavgLut;
+    static Ref<Texture2D> EmuLut;
+    static glm::vec3 EdgeTint = { 0.827f, 0.792f, 0.678f };
+
+    static glm::vec3 AverageFresnel(const glm::vec3& r, const glm::vec3& g)
+    {
+        return glm::vec3(0.087237f) + 0.0230685f * g - 0.0864902f * g * g + 0.0774594f * g * g * g
+            + 0.782654f * r - 0.136432f * r * r + 0.278708f * r * r * r
+            + 0.19744f * g * r + 0.0360605f * g * g * r - 0.2586f * g * r * r;
+    }
+
+    static glm::vec3 MultiScatterBRDF(const glm::vec3& albedo, float roughness, float NoV, float NoL)
+    {
+        glm::vec3 Eo = EmuLut->Sample({ NoV, roughness });
+        glm::vec3 Ei = EmuLut->Sample({ NoL, roughness });
+        glm::vec3 Eavg = EavgLut->Sample({ 0.0f, roughness });
+        glm::vec3 Favg = AverageFresnel(albedo, EdgeTint);
+        glm::vec3 Fms = (1.0f - Eo) * (1.0f - Ei) / (1.0f - Eavg) * INV_PI;
+        glm::vec3 Fadd = Favg * Eavg / (1.0f - Favg * (1.0f - Eavg));
+        return Fms * Fadd;
+    }
+
+    void PBR::Init()
+    {
+        TextureSpecification sp;
+        sp.Format = ImageFormat::RGB16F;
+        EavgLut = Texture2D::Create("assets/textures/lut/LUT_Eavg.png", sp);
+        EmuLut = Texture2D::Create("assets/textures/lut/LUT_Emu.png", sp);
+    }
+
+    glm::vec3 PBR::BRDF(const glm::vec3& albedo, float roughness, float metallic, const glm::vec3& N, const glm::vec3& V, const glm::vec3& L)
 	{
 		auto F0 = glm::mix(glm::vec3(0.04f), albedo, metallic);
 		auto H = glm::normalize(V + L);
@@ -22,8 +52,17 @@ namespace Ume
 
 		glm::vec3 kD = (glm::vec3(1.0f) - F) * (1.0f - metallic);
 
-		return kD * albedo * INV_PI + specular;
+        auto brdf = kD * albedo * INV_PI + specular;
+        brdf += MultiScatterBRDF(albedo, roughness, NoV, NoL);
+		return brdf;
 	}
+
+    //glm::vec3 PBR::BTDF(const glm::vec3& albedo, float roughness, float metallic, float eta, const glm::vec3& N, const glm::vec3& I, const glm::vec3& O)
+    //{
+    //    auto F0 = glm::mix(glm::vec3(0.04f), albedo, metallic);
+    //    // refract
+    //    auto H = 
+    //}
 
 	glm::vec3 PBR::BSDF(const glm::vec3& albedo, float roughness, float metallic, float eta, const glm::vec3& N, const glm::vec3& V, const glm::vec3& L)
 	{
@@ -44,7 +83,7 @@ namespace Ume
         float sinThetaT2 = 1.0f - eta * eta * (1.0f - cosThetaT * cosThetaT);
 
         bool totalInternalReflection = sinThetaT2 < 0.0f;
-        glm::vec3 reflection = F * (NDF * G) / (4.0f * NoV * NoL + 0.0001f); // ·´Éä¹±Ï×
+        glm::vec3 reflection = F * (NDF * G) / (4.0f * NoV * NoL + 0.0001f); // ï¿½ï¿½ï¿½ä¹±ï¿½ï¿½
 
         float refraction = 0.0f;
         if (!totalInternalReflection)
@@ -58,11 +97,11 @@ namespace Ume
             float Fr = 0.5f * (Rs + Rp);
             float Ft = 1.0f - Fr;
 
-            // ¼ÆËãÕÛÉäµÄ¹±Ï×
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¹ï¿½ï¿½ï¿½
             refraction = (1.0f - Fr) * (NDF * G) / (4.0f * NoV * NoL + 0.0001f);
         }
 
-        // ×éºÏ·´ÉäºÍÕÛÉä¹±Ï×
+        // ï¿½ï¿½Ï·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ä¹±ï¿½ï¿½
         glm::vec3 kD = (glm::vec3(1.0f) - F) * (1.0f - metallic);
         glm::vec3 color = kD * albedo * INV_PI + reflection + refraction;
 

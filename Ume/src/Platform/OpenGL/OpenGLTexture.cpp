@@ -268,7 +268,7 @@ namespace Ume
 		uint32_t ix1 = ix0 + 1;
 		uint32_t iy1 = iy0 + 1;
 
-		if (ix1 == m_Width - 1 || iy1 == m_Height - 1)
+		if (ix1 == m_Width || iy1 == m_Height)
 			return m_Data[iy0 * m_Width + ix0];
 
 		float wx = tx - ix0;

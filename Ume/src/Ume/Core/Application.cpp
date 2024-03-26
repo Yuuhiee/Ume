@@ -7,6 +7,7 @@
 #include "Ume/Core/Timestep.h"
 
 #include "Ume/Util/Random.h"
+#include "Ume/Util/PBR.h"
 #include "Ume/Renderer/RayTracing/AssetManager.h"
 
 #include "GLFW/glfw3.h"
@@ -34,6 +35,7 @@ namespace Ume
         Renderer::Init();
         Random::Init();
         AssetManager::Init();
+        PBR::Init();
     }
 
     void Application::Run()

@@ -217,42 +217,6 @@ namespace Ume
 		AssetManager::StoreMaterial(redWall);
 		AssetManager::StoreMaterial(greenWall);
 
-		// Objects
-		/*for (int i = 0; i < N; i++)
-		{
-			auto entity = m_ECS->CreateEntity();
-			auto object = &entity.AddComponent<SphereComponent>();
-			object->MaterialID = i + 1;
-
-			m_Scene->Entities.push_back(entity);
-			m_Scene->Objects.push_back(object);
-
-			auto& transform = entity.GetComponent<TransformComponent>();
-			transform.Position = { 0.7f * i, 2.2f * i, 0.0f };
-
-			if (AssetManager::GetMaterial(object->MaterialID).Emissive)
-			{
-				m_Scene->Lights.push_back({ &transform, AssetManager::GetMaterial(object->MaterialID).Emission, object });
-				transform.Scale = glm::vec3(0.1f);
-			}
-
-			if (i + 1 == pointEmissiveMaterial->ID)
-				transform.Position = { -0.5f, 2.5f, 0.7f };
-			if (i + 1 == directionalEmissiveMaterial->ID)
-			{
-				transform.Position = { 0.0f, 7.0f, 0.0f };
-				transform.Scale = glm::vec3(2.5f);
-			}
-			if (i + 1 == plasticMaterial->ID)
-				transform.Position = glm::vec3{ 0.7f, 2.2f, 0.0f } *0.0f;
-			if (i + 1 == goldMaterial->ID)
-				transform.Position = glm::vec3{ 0.7f, 2.2f, 0.0f } *1.0f;
-
-			transform.UpdateTransform();
-			object->Center = transform.Transform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-			object->Radius = transform.Scale.x;
-		}*/
-
 		auto sphere1 = Object::Create("Sphere1", ObjectType::Sphere);
 		sphere = sphere1->GetVertexArray();
 		sphere1->SetTransform(Transform({ 0.5f, 0.5f, 0.0f }, { 1.0f, 1.0f, 1.0f }));
@@ -268,10 +232,12 @@ namespace Ume
 
 		auto ceil = Object::Create("Ceil", ObjectType::Cube);
 		ceil->SetMaterial(&AssetManager::GetMaterial(0));
+		ceil->SetMaterial(new Material);
 		ceil->SetTransform(Transform({ 0.0f, 2.2f, 0.0f }, { 2.5f, 0.1f, 2.5f }));
 			
 		auto floor = Object::Create("Floor", ObjectType::Cube);
 		floor->SetMaterial(&AssetManager::GetMaterial(0));
+		floor->SetMaterial(new Material);
 		floor->SetTransform({});
 		//floor->SetTransform(Transform({ 0.0f, 0.0f, 0.0f }, { 2.0f, 1.0f, 1.0f }));
 		floor->SetTransform(Transform({ 0.0f, -1.2f, 0.0f }, { 2.5f, 0.1f, 2.5f }));
@@ -285,7 +251,7 @@ namespace Ume
 		wallR->SetTransform(Transform({ 1.2f, 0.5f, 0.0f }, { 0.1f, 3.3f, 2.5f }));
 			
 		auto wallB = Object::Create("Wall_Back", ObjectType::Cube);
-		wallB->SetMaterial(&AssetManager::GetMaterial(0));
+		wallB->SetMaterial(new Material);
 		wallB->SetTransform(Transform({ 0.0f, 0.5f, -1.2f }, { 2.5f, 3.3f, 0.1f }));
 
 		auto miku = Object::Create("Miku", ObjectType::Quad);
@@ -296,9 +262,9 @@ namespace Ume
 		miku->Material->AlbedoTexture = Texture2D::Create("assets/textures/Miku.jpg", sp);
 		miku->SetTransform(Transform({ 0.0f, 1.0f, -1.14f }));
 
+		m_Scene->AddObject(light);
 		m_Scene->AddObject(sphere1);
 		m_Scene->AddObject(sphere2);
-		m_Scene->AddObject(light);
 		m_Scene->AddObject(floor);
 		m_Scene->AddObject(ceil);
 		m_Scene->AddObject(wallL);
@@ -309,12 +275,6 @@ namespace Ume
 		m_Scene->BuildBVH();
 
 		RTRenderer::Submit(m_Scene);
-		m_Scene->Config.Ambient = 0.0f;
-		RTRenderer::Config.Method = SampleType::ImportanceCos;
-		RTRenderer::Config.wp = 1.0f;
-		RTRenderer::Config.wn = 1.0f;
-		RTRenderer::Config.wc = 1.0f;
-		RTRenderer::Config.wpl = 1.0f;
 		m_Scene->Config.Ambient = 0.5f;
 		RTRenderer::Config.RR = 0.9f;
 		exposure = 2.7f;
@@ -349,7 +309,6 @@ namespace Ume
 	{
 		timestep = ts;
 
-		if (RTRenderer::Frame > 2048) rendering = false;
 
 		if (!lockCamera || lockCamera && !rendering)
 		{
@@ -360,6 +319,7 @@ namespace Ume
 		if (rendering)
 		{
 			RTRenderer::Render(ts);
+			if (RTRenderer::Frame >= 2048) rendering = false;
 		}
 		else
 		{
@@ -660,7 +620,7 @@ namespace Ume
 						ImGui::SameLine();
 						ImGui::Checkbox("Use", &material.UseRoughnessTexture);
 					}
-					ImGui::SliderFloat("Roughness", &material.Roughness, 0.01f, 1.0f);
+					ImGui::SliderFloat("Roughness", &material.Roughness, 0.005f, 1.0f);
 					ImGui::TreePop();
 				}
 				ImGui::Separator();
