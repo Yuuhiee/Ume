@@ -1,4 +1,4 @@
 # Ume
-运行run.bat
+![](assets/LightOff.png)
 
-首次运行可能窗口未dock
+![](assets/LightOn.jpg)
