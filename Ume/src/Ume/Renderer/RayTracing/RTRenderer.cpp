@@ -115,12 +115,11 @@ namespace Ume
 		}
 		{
 			TextureSpecification coordInfo = { ImageFormat::RGB16F };
-			TextureSpecification idInfo = { ImageFormat::RED8UI };
 
 			FramebufferDescription description;
 			description.Width = width;
 			description.Height = height;
-			description.ColorAttachments = { coordInfo, coordInfo, coordInfo };
+			description.ColorAttachments = { coordInfo, coordInfo, coordInfo, coordInfo, coordInfo, coordInfo };
 			s_GFrameuffer = Framebuffer::Create(description);
 		}
 		quadVA = VertexArray::Create(ObjectType::Quad);
@@ -170,16 +169,17 @@ namespace Ume
 	//	return Shade(point, inDir, method);
 	//}
 
-	glm::vec3 RTRenderer::Shade(HitPayload& point, const glm::vec3& inDir)
+	glm::vec3 RTRenderer::Shade(const HitPayload& point, const glm::vec3& inDir)
 	{
+#if 0
 		glm::vec3 color(0.0f);
-
+	
 		auto& material = *point.Object->Material;
-		auto& N = point.Vertex.Normal;
+		auto N = point.Vertex.Normal;
 		auto& P = point.Vertex.Position;
 		auto& V = -inDir;
 		auto& texcoord = point.Vertex.Texcoord;
-
+	
 		glm::vec3 albedo(0.0f);
 		float roughness = 1.0f;
 		float metallic = 1.0f;
@@ -202,7 +202,7 @@ namespace Ume
 			else if (roughness < 0.5f) method = SampleMethodFlagBits::ImportanceGGX | SampleMethodFlagBits::ImportanceLight;
 			else								method = SampleMethodFlagBits::ImportanceCos | SampleMethodFlagBits::ImportanceLight;
 		}
-
+	
 		if (method & SampleMethodFlagBits::ImportanceLight)
 		{
 			float sumArea = 0.0f;
@@ -257,6 +257,137 @@ namespace Ume
 		}
 
 		return color;
+#else
+		glm::vec3 color(0.0f);
+		if (Random::Float() > Config.RR) return color;
+	
+		const auto& material = *point.Object->Material;
+		const auto& P = point.Vertex.Position;
+		const auto& V = -inDir;
+		const auto& texcoord = point.Vertex.Texcoord;
+		auto N = point.Vertex.Normal;
+
+		glm::vec3 albedo(0.0f);
+		float roughness = 1.0f;
+		float metallic = 1.0f;
+		SampleMethodFlags method;
+		{
+			albedo = material.UseAlbedoTexture ? material.AlbedoTexture->Sample(texcoord) : material.Albedo;
+			albedo *= material.ColorTint;
+			roughness = material.UseRoughnessTexture ? material.RoughnessTexture->Sample(texcoord).x : material.Roughness;
+			metallic = material.UseMetallicTexture ? material.MetallicTexture->Sample(texcoord).x : material.Metallic;
+			if (material.UseNormalTexture)
+			{
+				glm::vec3 normal = material.NormalTexture->Sample(texcoord);
+				normal = glm::normalize(normal * 2.0f - 1.0f);
+				glm::vec3 T = N;
+				glm::vec3 B = glm::normalize(glm::cross(N, V));
+				glm::mat3 TBN = { T, B, N };
+				N = glm::normalize(TBN * normal);
+			}
+		}
+	
+		float pdf_specular = 1.0f;
+		auto dir_specular = Random::ImportanceSampleGGX(N, inDir, roughness, pdf_specular);
+		auto parts = PBR::SeperatedBRDF(albedo, roughness, metallic, N, V, dir_specular);
+		auto specular = parts.Specular;
+		auto diffuse = parts.Diffuse;
+		auto specular_rate = specular / (glm::vec3)parts;
+		auto diffuse_rate = diffuse / (glm::vec3)parts;
+		float brdf_rr = glm::length(specular_rate) / (glm::length(specular_rate) + glm::length(diffuse_rate));
+#define SP
+#define LI
+#define DI
+	
+#ifdef SP
+		//float rr1 = 0.5f, rr2 = 0.5f;
+		//float rr1 = 1.0f, rr2 = 1.0f;
+		//float rr1 = brdf_rr, rr2 = 1.0f - brdf_rr;
+		float rr1 = parts.KS, rr2 = 1.0f - rr1;
+		//if (glm::length(specular) > 0.001f &&Random::Float() < rr1)
+		if (Random::Float() < rr1)
+		{
+			glm::vec3 lighting_specular(0.0f);
+			auto inter_specular = s_Scene->TraceRay({ P, dir_specular });
+			float k = std::max(glm::dot(dir_specular, N), 0.0f) / pdf_specular;
+			if (inter_specular.Hit)
+			{
+				glm::vec3 irradiance(0.0f);
+				if (!inter_specular.Object->Material->Emissive)
+				{
+					irradiance += Shade(inter_specular, dir_specular);
+				}
+				else
+				{
+					irradiance += GetLightIrradiance(inter_specular.Object, N, dir_specular, glm::length(inter_specular.Vertex.Position - P));
+				}
+				lighting_specular += parts.Specular * irradiance * k;
+			}
+			else lighting_specular += parts.Specular * s_Scene->GetEnvironment(dir_specular) * k;
+
+			color += lighting_specular / rr1;
+		}
+#endif // SP
+		//if (glm::length(diffuse) > 0.001f && Random::Float() < rr2)
+		else
+		{
+#ifdef LI
+			glm::vec3 lighting_diffuse(0.0f);
+			{
+				float sumArea = 0.0f;
+				for (auto light : s_Scene->Lights)
+					if (light->Active() && light->Emissive()) sumArea += light->Area;
+				float pArea = Random::Float() * sumArea;
+				sumArea = 0.0f;
+				for (auto light : s_Scene->Lights)
+				{
+					if (!light->Active() || !light->Emissive()) continue;
+					sumArea += light->Area;
+					if (sumArea >= pArea)
+					{
+						float pdf_light;
+						auto vertex = light->Sample(pdf_light).Vertex;
+						auto sample = vertex.Position;
+						auto L = glm::normalize(sample - P);
+						auto lightInter = s_Scene->TraceRay({ P, L });
+						if (lightInter.Object == light.get())
+						{
+							float distance = glm::length(sample - P);
+							float distance2 = distance * distance;
+							float cos_pri = (glm::dot(glm::normalize(P - sample), vertex.Normal));
+							auto lighrRad = GetLightIrradiance(light.get(), N, L, distance) * std::max(glm::dot(N, L), 0.0f);
+							lighting_diffuse += diffuse * lighrRad / pdf_light * cos_pri / distance2;
+						}
+						break;
+					}
+				}
+			}
+#endif // LI
+#ifdef DI
+			{
+				float pdf_diffuse = 1.0f;
+				auto dir_diffuse = Random::ImportanceSampleCos(N, pdf_diffuse);
+				auto inter_diffuse = s_Scene->TraceRay({ P, dir_diffuse });
+				float k = std::max(glm::dot(dir_diffuse, N), 0.0f) / pdf_diffuse;
+				if (inter_diffuse.Hit)
+				{
+					glm::vec3 irradiance(0.0f);
+					if (!inter_diffuse.Object->Material->Emissive)
+					{
+						irradiance += Shade(inter_diffuse, dir_diffuse);
+					}
+					lighting_diffuse += diffuse * irradiance * k;
+				}
+				else lighting_diffuse += diffuse * s_Scene->GetEnvironment(dir_diffuse) * k;
+
+				color += lighting_diffuse / rr2;
+			}
+#endif // DI
+		}
+
+		color /= Config.RR;
+		return glm::max(color, glm::vec3(0.0f));
+#endif
 	}
 
 	glm::vec4 RTRenderer::RayGen(glm::vec2 coord, uint32_t x, uint32_t y)
@@ -293,8 +424,8 @@ namespace Ume
 
 				if (!Config.Env)
 				{
-					radiance += payload.Object->Emissive() ? GetIrradiance(material, vertex.Position, camera->Position, false)
-												  : Shade(payload, ray.Direction);
+					radiance += Shade(payload, ray.Direction);
+					if (payload.Object->Emissive()) radiance += GetIrradiance(material, vertex.Position, camera->Position, false);
 				}
 				else
 				{
@@ -349,6 +480,10 @@ namespace Ume
 			denoiseShader->SetInt("Filter", Config.Denoise);
 			denoiseShader->SetFloat("Frame", Frame);
 			denoiseShader->SetInt("Accumulate", Config.Accumulate);
+			denoiseShader->SetFloat("s_Pos", Config.wp);
+			denoiseShader->SetFloat("s_Nor", Config.wn);
+			denoiseShader->SetFloat("s_Col", Config.wc);
+			denoiseShader->SetFloat("s_Pla", Config.wpl);
 			Renderer::Submit(quadVA);
 		}
 		Renderer::EndScene();
@@ -359,19 +494,42 @@ namespace Ume
 	void RTRenderer::GBufferPass(const glm::mat4& vp)
 	{
 		s_GFrameuffer->Bind();
-		RenderCommand::SetClearColor(0.0f, 0.0f, 1.0f, 0.0f);
+		RenderCommand::SetClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		RenderCommand::Clear();
 		Renderer::BeginScene(vp);
 		{
 			gbufferShader->Bind();
 			gbufferShader->SetMat4("u_ViewProjection", vp);
+			for (int i = 0; i < (int)s_Scene->Lights.size(); i++)
+			{
+				auto& light = s_Scene->Lights[i];
+				if (!light->Active()) continue;
+				auto str_i = std::to_string(i);
+				gbufferShader->SetFloat3("u_Lights[" + str_i + "].Position", light->Transform.Position);
+				gbufferShader->SetFloat3("u_Lights[" + str_i + "].Color", light->Material->Emission->Color);
+				gbufferShader->SetFloat("u_Lights[" + str_i + "].Intensity", light->Material->Emission->Intensity);
+			}
+			int lightIndex = 0;
 			for (const auto& object : s_Scene->Objects)
 			{
 				if (!object->Active()) continue;
+				gbufferShader->SetInt("u_LightIndex", object->Emissive() ? lightIndex++ : -1);
+				auto& material = object->Material;
 				gbufferShader->SetMat4("u_Model", object->Transform.ModelMatrix);
 				gbufferShader->SetMat3("u_NormalMatrix", object->Transform.NormalMatrix);
 				gbufferShader->SetInt("u_ObjectID", object->ID);
-				//UME_INFO(object->ID);
+				gbufferShader->SetFloat3("u_Material.ColorTint", material->ColorTint);
+				gbufferShader->SetFloat3("u_Material.Albedo", material->Albedo);
+				gbufferShader->SetInt("u_Material.UseAlbedoTexture", material->UseAlbedoTexture);
+				gbufferShader->SetInt("u_Material.UseRoughnessTexture", material->UseRoughnessTexture);
+				gbufferShader->SetInt("u_Material.UseMetallicTexture", material->UseMetallicTexture);
+				gbufferShader->SetInt("u_Material.UseNormalTexture", material->UseNormalTexture);
+				gbufferShader->SetFloat("u_Material.Roughness", material->Roughness);
+				gbufferShader->SetFloat("u_Material.Metallic", material->Metallic);
+				if (material->UseAlbedoTexture)		gbufferShader->SetTexture("u_Material.AlbedoTexture", material->AlbedoTexture, 1);
+				if (material->UseRoughnessTexture)	gbufferShader->SetTexture("u_Material.RoughnessTexture", material->RoughnessTexture, 2);
+				if (material->UseMetallicTexture)	gbufferShader->SetTexture("u_Material.MetallicTexture", material->MetallicTexture, 3);
+				if (material->UseNormalTexture)		gbufferShader->SetTexture("u_Material.NormalTexture", material->NormalTexture, 4);
 				Renderer::Submit(object->GetVertexArray());
 			}
 		}

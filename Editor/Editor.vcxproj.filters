@@ -71,5 +71,10 @@
       <Filter>assets\shaders</Filter>
     </None>
     <None Include="assets\shaders\Select.glsl" />
+    <None Include="assets\shaders\PreComputeIrradiance.glsl" />
+    <None Include="assets\shaders\Gbuffer_Defer.glsl" />
+    <None Include="assets\shaders\PBR_Defer.glsl" />
+    <None Include="assets\shaders\SSAO.glsl" />
+    <None Include="assets\shaders\Shadow.glsl" />
   </ItemGroup>
 </Project>

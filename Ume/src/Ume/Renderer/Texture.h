@@ -5,6 +5,11 @@
 
 namespace Ume
 {
+	enum class EStoreFormat
+	{
+		None, Pointer, Vector,
+	};
+
 	struct TextureSpecification
 	{
 		ImageFormat Format = ImageFormat::RGBA;
@@ -15,6 +20,8 @@ namespace Ume
 		bool GenMips = false;
 		bool SRGB = false;
 		bool Anisotropy = false;
+		EStoreFormat StoreFormat = EStoreFormat::Vector;
+		TextureType Type = TextureType::Texture2D;
 		// uint32_t Width = 1;
 		// uint32_t Height = 1;
 		static void Copy(TextureSpecification& dest, const TextureSpecification& from)
@@ -32,17 +39,9 @@ namespace Ume
 	{
 	public:
 		virtual ~Texture() = default;
-
-		virtual uint32_t GetWidth() const = 0;
-		virtual uint32_t GetHeight() const = 0;
 		virtual uint32_t GetRendererID() const = 0;
-
-		virtual void SetData(void* data, uint32_t size) = 0;
-		virtual void Resize(uint32_t width, uint32_t height) = 0;
 		virtual void Bind(int slot = 0) const = 0;
-		virtual std::vector<unsigned char> GetTextureData() const = 0;
 		virtual const TextureSpecification& Specification() const = 0;
-
 		virtual bool operator==(const Texture& other) const = 0;
 		virtual const std::string& GetFilePath() const = 0;
 	};
@@ -50,10 +49,26 @@ namespace Ume
 	class Texture2D : public Texture
 	{
 	public:
+		virtual ~Texture2D() = default;
+		virtual uint32_t GetWidth() const = 0;
+		virtual std::vector<unsigned char> GetTextureData() const = 0;
+		virtual unsigned char* GetDataPointer() const = 0;
+		virtual uint32_t GetHeight() const = 0;
 		virtual glm::vec4 Sample(const glm::vec2& texcoords) = 0;
 		virtual glm::vec4 Sample(const glm::vec3& direction) = 0;
+		virtual void SetData(void* data, uint32_t size) = 0;
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height, const TextureSpecification& specification = {});
 		static Ref<Texture2D> Create(const std::string& path, const TextureSpecification& specification = {});
+	};
+
+	class TextureCube : public Texture
+	{
+	public:
+		virtual ~TextureCube() = default;
+		//static Ref<TextureCube> Create(const std::string& path, const TextureSpecification& specification = {});
+		//static Ref<TextureCube> Create(const std::string& directory, const std::array<std::string, 6>& faces, const std::string& ext, const TextureSpecification& specification = {}); // For cubemaps
+		static Ref<TextureCube> Create(uint32_t size, const TextureSpecification& specification = {});
 	};
 
 	class SubTexture2D

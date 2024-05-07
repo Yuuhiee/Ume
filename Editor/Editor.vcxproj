@@ -150,11 +150,16 @@
     <None Include="assets\shaders\FlatColor.glsl" />
     <None Include="assets\shaders\FlatTexture.glsl" />
     <None Include="assets\shaders\GBuffer.glsl" />
+    <None Include="assets\shaders\Gbuffer_Defer.glsl" />
     <None Include="assets\shaders\PBR.glsl" />
     <None Include="assets\shaders\Particle.glsl" />
+    <None Include="assets\shaders\PBR_Defer.glsl" />
     <None Include="assets\shaders\PostProcess.glsl" />
+    <None Include="assets\shaders\PreComputeIrradiance.glsl" />
     <None Include="assets\shaders\Select.glsl" />
+    <None Include="assets\shaders\Shadow.glsl" />
     <None Include="assets\shaders\Skybox.glsl" />
+    <None Include="assets\shaders\SSAO.glsl" />
     <None Include="assets\shaders\Test.glsl" />
     <None Include="assets\shaders\Texture.glsl" />
   </ItemGroup>

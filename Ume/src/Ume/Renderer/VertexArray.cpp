@@ -96,7 +96,10 @@ namespace Ume
 				Ume::Vertex vertex;
 				vertex.Position = glm::vec3(x, y, z) * 0.5f;
 				vertex.Normal = normal;
-				vertex.Texcoord = { (float)j / sectors, 1.0f - (float)i / stacks };
+				vertex.Texcoord = {
+					0.5f + atan2f(normal.x, normal.z) * INV_TWO_PI,
+					0.5f - asinf(normal.y) * INV_PI
+				};
 				vertices->push_back(vertex);
 			}
 		}

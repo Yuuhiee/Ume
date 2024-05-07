@@ -257,4 +257,11 @@ namespace Ume
 
 		glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value));
 	}
+
+	void OpenGLShader::SetFloat3Array(const std::string& name, const std::vector<glm::vec3> values, uint32_t count)
+	{
+		UME_PROFILE_FUNCTION();
+		if (count == 0) count = values.size();
+		glUniform3fv(GetUniformLocation(name), count, glm::value_ptr(values[0]));
+	}
 }

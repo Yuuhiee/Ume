@@ -3,11 +3,13 @@
 
 #include "RenderCommand.h"
 #include "Renderer2D.h"
+#include "VertexArray.h"
 
 namespace Ume
 {
 	Scope<Renderer::SceneData> Renderer::s_SceneData = nullptr;
 	Ref<ShaderLibrary> Renderer::s_ShaderLibrary = nullptr;
+	static Ref<VertexArray> quadVA = nullptr;
 
 	void Renderer::Init()
 	{
@@ -35,6 +37,17 @@ namespace Ume
 	void Renderer::EnableDepthTest(bool enable)
 	{
 		RenderCommand::EnableDepthTest(enable);
+	}
+
+	void Renderer::DrawQuad()
+	{
+		if (!quadVA)
+		{
+			quadVA = VertexArray::Create(ObjectType::Quad);
+		}
+		Renderer::BeginScene(glm::mat4(1.0f));
+		Renderer::Submit(quadVA);
+		Renderer::EndScene();
 	}
 
 	void Renderer::Submit(const Ref<VertexArray>& vertexArray)

@@ -14,11 +14,11 @@ namespace Ume
 			return *material;
 		}
 		static Material& GetMaterial(int index) { return  *s_Materials[index]; }
-
-		static void StoreTexture(Ref<Texture2D> texture) { s_Textures.push_back(texture); }
-		static const Ref<Texture2D>& GetTexture(uint32_t index) { return s_Textures[index]; }
+		static const Ref<Texture2D>& DefaultTexture() { return s_Textures["assets/textures/Checkerboard.png"]; }
+		static const Ref<Texture2D>& LoadTexture(const std::string& path, const TextureSpecification& sp = {});
+		static void PostRender();
 	private:
 		static std::vector<Material*> s_Materials;
-		static std::vector<Ref<Texture2D>> s_Textures;
+		static std::unordered_map<std::string, Ref<Texture2D>> s_Textures;
 	};
 }

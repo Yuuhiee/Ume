@@ -30,4 +30,16 @@ namespace Ume
 		UME_CORE_ASSERT(false, "Unknown Renderer API!");
 		return nullptr;
 	}
+
+	Ref<TextureCube> TextureCube::Create(uint32_t size, const TextureSpecification& specification)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None: UME_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
+		case RendererAPI::API::OpenGL: return CreateRef<OpenGLTextureCube>(size, specification);
+		}
+
+		UME_CORE_ASSERT(false, "Unknown Renderer API!");
+		return nullptr;
+	}
 }

@@ -186,10 +186,10 @@ namespace Ume
 		return updated;
 	}
 
-	bool GUI::ImagePicker(Ref<Texture2D>& texture, bool showSRGB)
+	bool GUI::ImagePicker(Ref<Texture2D>& texture, TextureSpecification sp)
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-		ImGui::Image(texture ? (void*)texture->GetRendererID() : (void*)AssetManager::GetTexture(0)->GetRendererID(), ImVec2(64, 64), { 0, 1 }, { 1, 0 });
+		ImGui::Image(texture ? (void*)texture->GetRendererID() : (void*)AssetManager::DefaultTexture()->GetRendererID(), ImVec2(64, 64), { 0, 1 }, { 1, 0 });
 		ImGui::PopStyleVar();
 		//if (ImGui::IsItemHovered())
 		//{
@@ -209,22 +209,19 @@ namespace Ume
 			std::string filename = Application::Get().OpenFile("");
 			if (filename != "")
 			{
-				TextureSpecification sp;
-				if (showSRGB) sp.SRGB = sRGB;
-				texture = Texture2D::Create(filename, sp);
+				texture = AssetManager::LoadTexture(filename, sp);
 				return true;
 			}
 		}
-		if (showSRGB)
+		if (sp.SRGB)
 		{
 			ImGui::SameLine();
 			if (ImGui::Checkbox("sRGB", &sRGB))
 			{
 				if (texture)
 				{
-					TextureSpecification sp;
 					sp.SRGB = sRGB;
-					texture = Texture2D::Create(texture->GetFilePath(), sp);
+					texture = AssetManager::LoadTexture(texture->GetFilePath(), sp);
 				}
 			}
 		}

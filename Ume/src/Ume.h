@@ -36,3 +36,4 @@
 #include "Ume/Util/Random.h"
 #include "Ume/Util/PBR.h"
 #include "Ume/Util/File.h"
+#include "Ume/Util/PreCompute.h"

@@ -75,6 +75,7 @@ namespace Ume
 		Ref<Camera> ActivedCamera;
 		std::vector<Ref<Ume::Object>> Objects;
 		std::vector<Ref<Ume::Object>> Lights;
+		std::vector<std::array<glm::mat4, 6>> ShadowMatrices;
 		Ume::Object* SelectedObject = nullptr;
 
 		HitPayload TraceRay(const Ray& ray);
@@ -90,5 +91,7 @@ namespace Ume
 	private:
 		Ref<BVHBuildNode> m_BVHRoot;
 		Ref<Texture2D> m_EnvTexture = nullptr;
+
+		void RebuildLight();
 	};
 }

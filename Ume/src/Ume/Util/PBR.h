@@ -43,21 +43,19 @@ namespace Ume
 			return num / denom;
 		}
 
-		static float GeometrySchlickGGX(float NoV, float roughness)
+		static float GeometrySchlickGGX(float NoV, float k)
 		{
-			float r = (roughness + 1.0f);
-			float k = (r * r) / 8.0f;
-
 			float num = NoV;
 			float denom = NoV * (1.0f - k) + k;
 
 			return num / denom;
 		}
 
-		static float GeometrySmith(float NoV, float NoL, float roughness)
+		static float GeometrySmith(float NoV, float NoL, float roughness, bool direct = true)
 		{
-			float ggx2 = GeometrySchlickGGX(NoV, roughness);
-			float ggx1 = GeometrySchlickGGX(NoL, roughness);
+			float k = direct ? (roughness + 1.0f) * (roughness + 1.0f) * 0.125f : roughness * roughness * 0.5f;
+			float ggx2 = GeometrySchlickGGX(NoV, k);
+			float ggx1 = GeometrySchlickGGX(NoL, k);
 
 			return ggx1 * ggx2;
 		}
@@ -73,7 +71,7 @@ namespace Ume
 			float VoH = Dot(V, H);
 			float D = DistributionGGX(NoH, roughness);
 			auto F = FresnelSchlick(VoH, F0);
-			float G = GeometrySmith(NoV, NoL, roughness);
+			float G = GeometrySmith(NoV, NoL, roughness, true);
 
 			auto nominator = D * G * F;
 			float denominator = 4.0f * NoV * NoL + 0.001f;
@@ -83,8 +81,16 @@ namespace Ume
 
 			return (kD * albedo * INV_PI + specular) * irradiance;
 		}
+		struct Part
+		{
+			glm::vec3 Diffuse;
+			glm::vec3 Specular;
+			float KS;
 
-		static glm::vec3 BRDF(const glm::vec3& albedo, float roughness, float metallic, const glm::vec3& N, const glm::vec3& V, const glm::vec3& L);
+			operator glm::vec3() const { return Specular + Diffuse; }
+		};
+		static Part SeperatedBRDF(const glm::vec3& albedo, float roughness, float metallic, const glm::vec3& N, const glm::vec3& V, const glm::vec3& L, bool direct = true);
+		static glm::vec3 BRDF(const glm::vec3& albedo, float roughness, float metallic, const glm::vec3& N, const glm::vec3& V, const glm::vec3& L, bool direct = true);
 		static glm::vec3 BTDF(const glm::vec3& albedo, float roughness, float metallic, float eta, const glm::vec3& N, const glm::vec3& I, const glm::vec3& O);
 		static glm::vec3 BSDF(const glm::vec3& albedo, float roughness, float metallic, float eta, const glm::vec3& N, const glm::vec3& V, const glm::vec3& L);
 	};

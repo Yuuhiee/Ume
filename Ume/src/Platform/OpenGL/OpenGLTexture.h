@@ -22,6 +22,7 @@ namespace Ume
 		virtual glm::vec4 Sample(const glm::vec3& direction) override;
 		virtual std::vector<unsigned char> GetTextureData() const override;
 		virtual const TextureSpecification& Specification() const override { return m_Specification; }
+		virtual unsigned char* GetDataPointer() const override { return m_DataPointer; }
 
 		virtual bool operator==(const Texture& other) const override
 		{
@@ -29,9 +30,30 @@ namespace Ume
 		}
 	private:
 		std::vector<glm::vec4> m_Data;
+		unsigned char* m_DataPointer = nullptr;
 		std::string m_Path;
 		uint32_t m_Width, m_Height, m_Channel = 3;
-		uint32_t m_RendererID;
+		uint32_t m_RendererID = 0;
+		TextureSpecification m_Specification;
+	};
+
+	class OpenGLTextureCube : public TextureCube
+	{
+	public:
+		OpenGLTextureCube(uint32_t size, const TextureSpecification& specification = {});
+		~OpenGLTextureCube();
+
+		virtual void Bind(int slot = 0) const override;
+		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
+		virtual const TextureSpecification& Specification() const override { return m_Specification; }
+		virtual const std::string& GetFilePath() const { return ""; }
+		virtual bool operator==(const Texture& other) const override
+		{
+			return ((OpenGLTextureCube&)other).m_RendererID == m_RendererID;
+		}
+	private:
+		uint32_t m_Size;
+		uint32_t m_RendererID = 0;
 		TextureSpecification m_Specification;
 	};
 }

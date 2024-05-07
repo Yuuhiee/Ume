@@ -37,6 +37,6 @@ namespace Ume
 			return updated;
 		}
 
-		static bool ImagePicker(Ref<Texture2D>& texture, bool showSRGB = false);
+		static bool ImagePicker(Ref<Texture2D>& texture, TextureSpecification sp = {});
 	};
 }

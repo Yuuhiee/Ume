@@ -35,14 +35,17 @@ namespace Ume
 	{
 		float u = Float();
 		float v = Float();
+		float a2 = a * a;
 
 		float phi = TWO_PI * u;
-		float cosTheta = sqrt((1.0f - v) / (1.0f + (a * a - 1.0f) * v));
+		float cosTheta = sqrt((1.0f - v) / (1.0f + (a2 - 1.0f) * v));
 		float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
 		glm::vec3 H = { cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta };
 		H = TransformToNormalSpace(H, N);
+
 		float NoH = PBR::Dot(N, H);
 		pdf = PBR::DistributionGGX(NoH, a) * NoH / (4.0f * PBR::Dot(-V, H));
+
 		return glm::reflect(V, H);
 	}
 }

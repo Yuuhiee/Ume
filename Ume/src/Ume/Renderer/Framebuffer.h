@@ -6,9 +6,11 @@ namespace Ume
 	struct FramebufferDescription
 	{
 		uint32_t Width, Height;
+		uint32_t Size;
 		std::vector<TextureSpecification> ColorAttachments;
 		uint32_t Samples = 1;
 		bool SwapchainTarget = false;
+		TextureSpecification DepthAttachment = { ImageFormat::DEPTH24STENCIL8 };
 	};
 	class Framebuffer
 	{
@@ -20,7 +22,7 @@ namespace Ume
 		virtual uint32_t GetRendererID() const = 0;
 		virtual const FramebufferDescription& GetDescription() const = 0;
 		virtual const std::vector<Ref<Texture2D>>& GetColorAttachments() const = 0;
-		virtual const Ref<Texture2D>& GetDepthAttachment() const = 0;
+		virtual const Ref<Texture>& GetDepthAttachment() const = 0;
 
 		static Ref<Framebuffer> Create(const FramebufferDescription& description);
 	};

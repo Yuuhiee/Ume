@@ -61,21 +61,33 @@ namespace Ume
 	static bool useHDR = true;
 	static float exposure = 3.0f;
 	static bool lockCamera = true;
+	static int maxSPP = 2048;
 	static Ref<Framebuffer> editorFramebuffer;
 	static Ref<Framebuffer> editorPostFramebuffer;
 	static Ref<Framebuffer> renderPostFramebuffer;
+	static Ref<Framebuffer> gbufferFramebuffer;
 	static Ref<VertexArray> quadVA;
 	static Ref<Shader> postShader;
 	static Ref<Shader> gbufferShader;
 	static Ref<Shader> skyboxShader;
 	// End:: Gama
+	static std::vector<glm::vec3> ssaoKernel;
 
 	static Ref<VertexArray> cube;
 	static Ref<Shader> pbrShader;
+	static Ref<Shader> pbrDeferShader;
+	static Ref<Shader> ssaoShader;
 	static Ref<VertexArray> sphere;
 
 	static Ref<Framebuffer> selectFramebuffer;
 	static Ref<Shader>	selectShader;
+
+	static Ref<Texture2D> t_Irradiance;
+	static Ref<Texture2D> t_BRDFlut;
+	static Ref<Texture2D> t_Noise;
+	static float ssaoRadius = 10.0f;
+	static float minRoughness = 0.015f;
+
 
 	RayTracingLayer::RayTracingLayer()
 		: Layer("RayTracing")
@@ -95,6 +107,7 @@ namespace Ume
 			RTRenderer::Resize(size.x, size.y);
 			editorFramebuffer->Resize(size.x, size.y);
 			editorPostFramebuffer->Resize(size.x, size.y);
+			gbufferFramebuffer->Resize(size.x, size.y);
 		});
 
 		m_SceneViewport.SetCallback(Viewport::CallbackType::MouseButtonPress, [&](Viewport* viewport, void* data)
@@ -140,11 +153,23 @@ namespace Ume
 
 		TextureSpecification sp;
 		sp.SRGB = true;
-		sp.Filter = TextureFilter::Linear;
-		m_Scene->SetEnvTexture(Texture2D::Create("assets/textures/ibl_hdr_radiance.png", sp));
+		sp.Filter = TextureFilter::Mipmap;
+		sp.GenMips = true;
+		auto radiance = AssetManager::LoadTexture("assets/textures/ibl_hdr_radiance.png", sp);
+		t_Irradiance = PreCompute::GetIrradiance(radiance);
+		{
+			TextureSpecification sp;
+			sp.Format = ImageFormat::RGB16F;
+			t_BRDFlut = AssetManager::LoadTexture("assets/textures/lut/ibl_brdf_lut.png", sp);
+		}
+		m_Scene->SetEnvTexture(radiance);
 
 		RTRenderer::Init(window.GetWidth(), window.GetHeight());
 		RTRenderer::Config.PickLight = LightPickType::All;
+		RTRenderer::Config.wp = 32.0f;
+		RTRenderer::Config.wn = .1f;
+		RTRenderer::Config.wc = .6f;
+		RTRenderer::Config.wpl = .1f;
 	}
 
 	void RayTracingLayer::OnAttach()
@@ -157,7 +182,7 @@ namespace Ume
 	{
 		// Textures
 		AssetManager::GetMaterial(0).UseAlbedoTexture = true;
-		AssetManager::GetMaterial(0).AlbedoTexture = AssetManager::GetTexture(0);
+		AssetManager::GetMaterial(0).AlbedoTexture = AssetManager::DefaultTexture();
 
 		// Materials
 		Material* goldMaterial = new Material;
@@ -168,19 +193,19 @@ namespace Ume
 
 		Material* plasticMaterial = new Material;
 		plasticMaterial->Albedo = glm::vec3(1.0f, 1.0f, 1.0f);
-		plasticMaterial->Roughness = 0.2f;
+		plasticMaterial->Roughness = 0.015f;
 		plasticMaterial->Metallic = 0.0f;
 		plasticMaterial->Emissive = false;
 
 		Material* pointEmissiveMaterial = new Material;
 		pointEmissiveMaterial->Albedo = glm::vec3(1.0f, 0.9f, 0.9f);
-		pointEmissiveMaterial->Roughness = 0.2f;
+		pointEmissiveMaterial->Roughness = 1.0f;
 		pointEmissiveMaterial->Metallic = 0.0f;
 		pointEmissiveMaterial->Emissive = true;
 		{
 			Emission* emission = new Emission;
 			emission->Color = { 1.0f, 0.5f, 0.0f };
-			emission->Color = { 1.0f, 0.8f, 1.0f };
+			emission->Color = { 1.0f, 1.0f, 1.0f };
 			emission->Intensity = 1.0f;
 			pointEmissiveMaterial->Emission = emission;
 		}
@@ -259,7 +284,7 @@ namespace Ume
 		miku->Material->UseAlbedoTexture = true;
 		TextureSpecification sp;
 		sp.SRGB = true;
-		miku->Material->AlbedoTexture = Texture2D::Create("assets/textures/Miku.jpg", sp);
+		miku->Material->AlbedoTexture = AssetManager::LoadTexture("assets/textures/Miku.jpg", sp);
 		miku->SetTransform(Transform({ 0.0f, 1.0f, -1.14f }));
 
 		m_Scene->AddObject(light);
@@ -276,7 +301,7 @@ namespace Ume
 
 		RTRenderer::Submit(m_Scene);
 		m_Scene->Config.Ambient = 0.5f;
-		RTRenderer::Config.RR = 0.9f;
+		RTRenderer::Config.RR = 0.8f;
 		exposure = 2.7f;
 	}
 
@@ -285,6 +310,7 @@ namespace Ume
 		auto& window = Application::Get().GetWindow();
 		{
 			TextureSpecification colorInfo = { ImageFormat::RGBA16F };
+			TextureSpecification flags = { ImageFormat::RGBA };
 			FramebufferDescription description;
 			description.Width = window.GetWidth();
 			description.Height = window.GetHeight();
@@ -293,15 +319,41 @@ namespace Ume
 			editorPostFramebuffer = Framebuffer::Create(description);
 			editorFramebuffer = Framebuffer::Create(description);
 			selectFramebuffer = Framebuffer::Create(description);
+			description.ColorAttachments = { colorInfo, colorInfo, colorInfo };
+			gbufferFramebuffer = Framebuffer::Create(description);
 
 			quadVA = VertexArray::Create(ObjectType::Quad);
 			postShader = Shader::Create("assets/shaders/PostProcess.glsl");
-			gbufferShader = Shader::Create("assets/shaders/GBuffer.glsl");
+			gbufferShader = Shader::Create("assets/shaders/Gbuffer_Defer.glsl");
 			skyboxShader = Shader::Create("assets/shaders/Skybox.glsl");
 			selectShader = Shader::Create("assets/shaders/Select.glsl");
 
 			cube = VertexArray::Create(ObjectType::Cube);
 			pbrShader = Shader::Create("assets/shaders/PBR.glsl");
+			pbrDeferShader = Shader::Create("assets/shaders/PBR_Defer.glsl");
+			ssaoShader = Shader::Create("assets/shaders/SSAO.glsl");
+
+			uint8_t kernelSize = 64;
+			ssaoKernel.reserve(kernelSize);
+			auto Lerp = [](float a, float b, float f) { return a + f * (b - a); };
+			for (int i = 0; i < kernelSize; i++)
+			{
+				auto sample = glm::normalize(glm::vec3(Random::Float() * 2.0f - 1.0f, Random::Float() * 2.0f - 1.0f, Random::Float()));
+				float scale = float(i) / kernelSize;
+				scale = Lerp(0.1, 1.0, scale * scale);
+				ssaoKernel.push_back(sample * scale);
+			}
+
+			int size = 4;
+			std::vector<glm::vec3> ssaoNoise(size * size);
+			for (int i = 0; i < size * size; i++)
+				ssaoNoise[i] = { Random::Float() * 2.0f - 1.0f, Random::Float() * 2.0f - 1.0f, 0.0f };
+
+			TextureSpecification sp;
+			sp.Format = ImageFormat::RGB16F;
+			t_Noise = Texture2D::Create(size, size, sp);
+			t_Noise->SetData(ssaoNoise.data(), sizeof(glm::vec3) * ssaoNoise.size());
+
 		}
 	}
 
@@ -309,115 +361,186 @@ namespace Ume
 	{
 		timestep = ts;
 
-
 		if (!lockCamera || lockCamera && !rendering)
 		{
 			controller.Update(ts);
 		}
 
+		auto width = editorFramebuffer->GetColorAttachments()[0]->GetWidth();
+		auto height = editorFramebuffer->GetColorAttachments()[0]->GetHeight();
+
 		RTRenderer::GBufferPass(camera->GetViewProjection());
+		// ssao pass
+		RTRenderer::GetGBuffer()->Bind();
+		{
+			ssaoShader->Bind();
+			ssaoShader->SetTexture("Position", RTRenderer::GetGBuffer()->GetColorAttachments()[0], 1);
+			ssaoShader->SetTexture("Normal", RTRenderer::GetGBuffer()->GetColorAttachments()[1], 2);
+			ssaoShader->SetTexture("Albedo", RTRenderer::GetGBuffer()->GetColorAttachments()[3], 3);
+			ssaoShader->SetTexture("FlagBits", RTRenderer::GetGBuffer()->GetColorAttachments()[2], 6);
+			ssaoShader->SetTexture("u_NoiseTexture", t_Noise, 7);
+			ssaoShader->SetMat4("u_ViewProjection", camera->GetViewProjection());
+			ssaoShader->SetInt("u_Width", width);
+			ssaoShader->SetInt("u_Height", height);
+			ssaoShader->SetFloat("radius", ssaoRadius);
+			ssaoShader->SetFloat3Array("u_Samples", ssaoKernel);
+			Renderer::DrawQuad();
+		}
+		RTRenderer::GetGBuffer()->Unbind();
+
 		if (rendering)
 		{
 			RTRenderer::Render(ts);
-			if (RTRenderer::Frame >= 2048) rendering = false;
+			if (RTRenderer::Frame >= maxSPP) rendering = false;
 		}
 		else
 		{
-			//m_Scene->BuildBVH();
+			// pbr pass (defer)
 			editorFramebuffer->Bind();
-			RenderCommand::SetClearColor(0.2f, 0.2f, 0.2f, 0.0f);
-			RenderCommand::Clear();
-			Renderer::BeginScene(camera->GetViewProjection());
 			{
-				pbrShader->Bind();
-				pbrShader->SetMat4("u_ViewProjection", camera->GetViewProjection());
-				pbrShader->SetFloat3("u_CameraPosition", camera->Position);
+				RenderCommand::SetClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+				RenderCommand::Clear();
+				Renderer::BeginScene(camera->GetViewProjection());
+
+				RenderCommand::SetDepthTestFunc(DepthTestFunc::Lequal);
+				skyboxShader->Bind();
+				skyboxShader->SetMat4("u_ViewProjection", camera->GetViewProjection());
+				skyboxShader->SetFloat3("u_CameraPosition", camera->Position);
+				skyboxShader->SetTexture("u_EnvironmentMap", m_Scene->GetEnvTexture(), 9);
+				skyboxShader->SetFloat("u_Ambient", m_Scene->Config.Ambient);
+				Renderer::Submit(cube);
+				skyboxShader->Unbind();
+				RenderCommand::SetDepthTestFunc(DepthTestFunc::Less);
+
+				pbrDeferShader->Bind();
+				pbrDeferShader->SetTexture("Position", RTRenderer::GetGBuffer()->GetColorAttachments()[0], 1);
+				pbrDeferShader->SetTexture("Normal", RTRenderer::GetGBuffer()->GetColorAttachments()[1], 2);
+				pbrDeferShader->SetTexture("Albedo", RTRenderer::GetGBuffer()->GetColorAttachments()[3], 3);
+				pbrDeferShader->SetTexture("MaterialParams", RTRenderer::GetGBuffer()->GetColorAttachments()[5], 4);
+				pbrDeferShader->SetTexture("Emission", RTRenderer::GetGBuffer()->GetColorAttachments()[4], 5);
+				pbrDeferShader->SetTexture("FlagBits", RTRenderer::GetGBuffer()->GetColorAttachments()[2], 6);
+				pbrDeferShader->SetFloat3("u_CameraPosition", camera->Position);
+				pbrDeferShader->SetFloat("u_EnvIntensity", m_Scene->Config.Ambient);
+				pbrDeferShader->SetTexture("u_Radiance", m_Scene->GetEnvTexture(), 7);
+				pbrDeferShader->SetTexture("u_Irradiance", t_Irradiance, 8);
+				pbrDeferShader->SetTexture("u_BRDFLUT", t_BRDFlut, 9);
+				pbrDeferShader->SetInt("u_NumLight", (int)m_Scene->Lights.size());
+				pbrDeferShader->SetInt("u_Width", width);
+				pbrDeferShader->SetInt("u_Height", height);
 				for (int i = 0; i < (int)m_Scene->Lights.size(); i++)
 				{
 					auto& light = m_Scene->Lights[i];
 					if (!light->Active()) continue;
 					auto str_i = std::to_string(i);
-					pbrShader->SetFloat3("u_Lights[" + str_i + "].Position", light->Transform.Position);
-					pbrShader->SetFloat3("u_Lights[" + str_i + "].Color", light->Material->Emission->Color);
-					pbrShader->SetFloat("u_Lights[" + str_i + "].Intensity", light->Material->Emission->Intensity);
+					pbrDeferShader->SetFloat3("u_Lights[" + str_i + "].Position", light->Transform.Position);
+					pbrDeferShader->SetFloat3("u_Lights[" + str_i + "].Color", light->Material->Emission->Color);
+					pbrDeferShader->SetFloat("u_Lights[" + str_i + "].Intensity", light->Material->Emission->Intensity);
 				}
-				pbrShader->SetInt("u_NumLight", (int)m_Scene->Lights.size());
-				int lightIndex = 0;
-				for (const auto& object : m_Scene->Objects)
-				{
-					if (!object->Active()) continue;
-					pbrShader->SetInt("u_LightIndex", object->Emissive() ? lightIndex++ : -1);
-					auto& material = object->Material;
-					pbrShader->SetMat4("u_Model", object->Transform.ModelMatrix);
-					pbrShader->SetMat3("u_NormalMatrix", object->Transform.NormalMatrix);
-					pbrShader->SetFloat("u_ObjectID", (float)object->ID);
-					pbrShader->SetTexture("u_Texture", RTRenderer::GetImage());
-
-					pbrShader->SetFloat3("u_Material.ColorTint", material->ColorTint);
-					pbrShader->SetFloat3("u_Material.Albedo", material->Albedo);
-					pbrShader->SetInt("u_Material.UseAlbedoTexture", material->UseAlbedoTexture);
-					pbrShader->SetInt("u_Material.UseRoughnessTexture", material->UseRoughnessTexture);
-					pbrShader->SetInt("u_Material.UseMetallicTexture", material->UseMetallicTexture);
-					pbrShader->SetInt("u_Material.UseNormalTexture", material->UseNormalTexture);
-					pbrShader->SetFloat("u_Material.Roughness", material->Roughness);
-					pbrShader->SetFloat("u_Material.Metallic", material->Metallic);
-					if (material->UseAlbedoTexture) pbrShader->SetTexture("u_Material.AlbedoTexture", material->AlbedoTexture, 10);
-					if (material->UseRoughnessTexture) pbrShader->SetTexture("u_Material.RoughnessTexture", material->RoughnessTexture, 11);
-					if (material->UseMetallicTexture) pbrShader->SetTexture("u_Material.MetallicTexture", material->MetallicTexture, 12);
-					if (material->UseNormalTexture) pbrShader->SetTexture("u_Material.NormalTexture", material->NormalTexture, 13);
-
-					Renderer::Submit(object->GetVertexArray());
-				}
+				Renderer::DrawQuad();
+				Renderer::EndScene();
 			}
-			{
-				RenderCommand::SetDepthTestFunc(DepthTestFunc::Lequal);
-				skyboxShader->Bind();
-				skyboxShader->SetMat4("u_ViewProjection", camera->GetViewProjection());
-				skyboxShader->SetFloat3("u_CameraPosition", camera->Position);
-                skyboxShader->SetTexture("u_EnvironmentMap", m_Scene->GetEnvTexture(), 9);
-				skyboxShader->SetFloat("u_Ambient", m_Scene->Config.Ambient);
-                Renderer::Submit(cube);
-				skyboxShader->Unbind();
-				RenderCommand::SetDepthTestFunc(DepthTestFunc::Less);
-			}
-			Renderer::EndScene();
 			editorFramebuffer->Unbind();
+
+			// pbr pass (forward)
+			// editorFramebuffer->Bind();
+			//{
+			//	RenderCommand::SetClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+			//	RenderCommand::Clear();
+			//	Renderer::BeginScene(camera->GetViewProjection());
+			//	{
+			//		pbrShader->Bind();
+			//		pbrShader->SetMat4("u_ViewProjection", camera->GetViewProjection());
+			//		pbrShader->SetFloat3("u_CameraPosition", camera->Position);
+			//		for (int i = 0; i < (int)m_Scene->Lights.size(); i++)
+			//		{
+			//			auto& light = m_Scene->Lights[i];
+			//			if (!light->Active()) continue;
+			//			auto str_i = std::to_string(i);
+			//			pbrShader->SetFloat3("u_Lights[" + str_i + "].Position", light->Transform.Position);
+			//			pbrShader->SetFloat3("u_Lights[" + str_i + "].Color", light->Material->Emission->Color);
+			//			pbrShader->SetFloat("u_Lights[" + str_i + "].Intensity", light->Material->Emission->Intensity);
+			//		}
+			//		pbrShader->SetInt("u_NumLight", (int)m_Scene->Lights.size());
+			//		int lightIndex = 0;
+			//		for (const auto& object : m_Scene->Objects)
+			//		{
+			//			if (!object->Active()) continue;
+			//			pbrShader->SetInt("u_LightIndex", object->Emissive() ? lightIndex++ : -1);
+			//			auto& material = object->Material;
+			//			pbrShader->SetMat4("u_Model", object->Transform.ModelMatrix);
+			//			pbrShader->SetMat3("u_NormalMatrix", object->Transform.NormalMatrix);
+			//			pbrShader->SetFloat3("u_Material.ColorTint", material->ColorTint);
+			//			pbrShader->SetFloat3("u_Material.Albedo", material->Albedo);
+			//			pbrShader->SetInt("u_Material.UseAlbedoTexture", material->UseAlbedoTexture);
+			//			pbrShader->SetInt("u_Material.UseRoughnessTexture", material->UseRoughnessTexture);
+			//			pbrShader->SetInt("u_Material.UseMetallicTexture", material->UseMetallicTexture);
+			//			pbrShader->SetInt("u_Material.UseNormalTexture", material->UseNormalTexture);
+			//			pbrShader->SetFloat("u_Material.Roughness", material->Roughness);
+			//			pbrShader->SetFloat("u_Material.Metallic", material->Metallic);
+			//			pbrShader->SetFloat("u_EnvIntensity", m_Scene->Config.Ambient);
+			//			pbrShader->SetTexture("u_Radiance", m_Scene->GetEnvTexture(), 1);
+			//			pbrShader->SetTexture("u_Irradiance", t_Irradiance, 2);
+			//			pbrShader->SetTexture("u_BRDFLUT", t_BRDFlut, 3);
+			//			if (material->UseAlbedoTexture) pbrShader->SetTexture("u_Material.AlbedoTexture", material->AlbedoTexture, 10);
+			//			if (material->UseRoughnessTexture) pbrShader->SetTexture("u_Material.RoughnessTexture", material->RoughnessTexture, 11);
+			//			if (material->UseMetallicTexture) pbrShader->SetTexture("u_Material.MetallicTexture", material->MetallicTexture, 12);
+			//			if (material->UseNormalTexture) pbrShader->SetTexture("u_Material.NormalTexture", material->NormalTexture, 13);
+			//
+			//			Renderer::Submit(object->GetVertexArray());
+			//		}
+			//	}
+			//
+			//	// environment pass
+			//	{
+			//		RenderCommand::SetDepthTestFunc(DepthTestFunc::Lequal);
+			//		skyboxShader->Bind();
+			//		skyboxShader->SetMat4("u_ViewProjection", camera->GetViewProjection());
+			//		skyboxShader->SetFloat3("u_CameraPosition", camera->Position);
+			//		skyboxShader->SetTexture("u_EnvironmentMap", m_Scene->GetEnvTexture(), 9);
+			//		skyboxShader->SetFloat("u_Ambient", m_Scene->Config.Ambient);
+			//		Renderer::Submit(cube);
+			//		skyboxShader->Unbind();
+			//		RenderCommand::SetDepthTestFunc(DepthTestFunc::Less);
+			//	}
+			//	Renderer::EndScene();
+			//}
+			// editorFramebuffer->Unbind();
 		}
+
+		// ray tracing post process
 		{
 			renderPostFramebuffer->Bind();
 			RenderCommand::SetClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 			RenderCommand::Clear();
-			Renderer::BeginScene(camera->GetViewProjection());
-			{
-				postShader->Bind();
-				postShader->SetTexture("u_Texture", RTRenderer::GetImage());
-				postShader->SetInt("u_Gamma", (int)useGamma);
-				postShader->SetInt("u_HDR", (int)useHDR);
-				postShader->SetFloat("u_Exposure", exposure);
-				Renderer::Submit(quadVA);
-			}
-			Renderer::EndScene();
+			postShader->Bind();
+			postShader->SetTexture("u_Texture", RTRenderer::GetImage());
+			postShader->SetInt("u_Gamma", (int)useGamma);
+			postShader->SetInt("u_HDR", (int)useHDR);
+			postShader->SetFloat("u_Exposure", exposure);
+			Renderer::DrawQuad();
 			renderPostFramebuffer->Unbind();
 		}
+		// select pass
 		{
 			selectFramebuffer->Bind();
 			RenderCommand::SetClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 			RenderCommand::Clear();
 			Renderer::BeginScene(camera->GetViewProjection());
 			{
-				auto width = editorFramebuffer->GetColorAttachments()[0]->GetWidth();
-				auto height = editorFramebuffer->GetColorAttachments()[0]->GetHeight();
 				selectShader->Bind();
 				selectShader->SetTexture("u_ColorImage", editorFramebuffer->GetColorAttachments()[0], 0);
 				selectShader->SetTexture("u_IDImage", RTRenderer::GetGBuffer()->GetColorAttachments()[2], 1);
 				selectShader->SetInt("u_SelectedID", m_Scene->SelectedObject ? m_Scene->SelectedObject->ID : 0);
-				postShader->SetInt("u_Width", width);
-				postShader->SetInt("u_Height", height);
+				selectShader->SetInt("u_Width", width);
+				selectShader->SetInt("u_Height", height);
 				Renderer::Submit(quadVA);
 			}
 			Renderer::EndScene();
 			selectFramebuffer->Unbind();
+		}
 
+		// rasterization post process
+		{
 			editorPostFramebuffer->Bind();
 			RenderCommand::SetClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 			RenderCommand::Clear();
@@ -587,7 +710,7 @@ namespace Ume
 						if (ImGui::TreeNode("Light"))
 						{
 							ImGui::ColorEdit3("Emission", glm::value_ptr(emission->Color));
-							rebuild |= ImGui::SliderFloat("Intensity", &emission->Intensity, 0.0f, 3.0f);
+							rebuild |= ImGui::SliderFloat("Intensity", &emission->Intensity, 0.0f, 8.0f);
 							//GUI::Selector<LightType>("Type", emission->Type, LightTypeNames);
 							ImGui::TreePop();
 						}
@@ -599,7 +722,9 @@ namespace Ume
 				ImGui::SetNextTreeNodeOpen(true);
 				if (ImGui::TreeNode("Albedo"))
 				{
-					if (GUI::ImagePicker(material.AlbedoTexture, true)) material.UseAlbedoTexture = true;
+					TextureSpecification sp;
+					sp.SRGB = true;
+					if (GUI::ImagePicker(material.AlbedoTexture, sp)) material.UseAlbedoTexture = true;
 					if (material.AlbedoTexture)
 					{
 						ImGui::SameLine();
@@ -620,7 +745,8 @@ namespace Ume
 						ImGui::SameLine();
 						ImGui::Checkbox("Use", &material.UseRoughnessTexture);
 					}
-					ImGui::SliderFloat("Roughness", &material.Roughness, 0.005f, 1.0f);
+					ImGui::SliderFloat("Roughness", &material.Roughness, minRoughness, 1.0f);
+					//ImGui::InputFloat("min", &minRoughness);
 					ImGui::TreePop();
 				}
 				ImGui::Separator();
@@ -673,7 +799,15 @@ namespace Ume
 				ImGui::SetNextTreeNodeOpen(true);
 				if (ImGui::TreeNode("Environment"))
 				{
-					if (GUI::ImagePicker(m_Scene->GetEnvTexture(), true) && !m_Scene->Config.Ambient) m_Scene->Config.Ambient = 0.3f;
+					TextureSpecification sp;
+					sp.SRGB = true;
+					sp.GenMips = true;
+					sp.Filter = TextureFilter::Mipmap;
+					if (GUI::ImagePicker(m_Scene->GetEnvTexture(), sp))
+					{
+						t_Irradiance = PreCompute::GetIrradiance(m_Scene->GetEnvTexture());
+						if (!m_Scene->Config.Ambient) m_Scene->Config.Ambient = 0.3f;
+					}
 					ImGui::SliderFloat("Ambient", &m_Scene->Config.Ambient, 0.0f, 1.0f);
 					ImGui::TreePop();
 				}
@@ -682,6 +816,8 @@ namespace Ume
 				if (ImGui::TreeNode("Config"))
 				{
 					ImGui::SliderFloat("GI Strength", &RTRenderer::Config.RR, 0.1f, 0.9f);
+					ImGui::DragFloat("SSAO Radius", &ssaoRadius, 0.1f, 0.0f);
+					ImGui::DragInt("MaxSPP", &maxSPP, 1.0f, 1);
 					//if (GUI::Selector<PolygonMode>("Polygon Mode", polygonMode, PolygonModeNames))
 					//{
 					//	Renderer::SetPolygonMode(polygonMode);
@@ -697,7 +833,10 @@ namespace Ume
 
 		ImGui::Begin("Infomations");
 		{
-			ImGui::Text("Time: %2fms", timestep.GetMilliseconds());
+			static float avg_time;
+			if (rendering) avg_time = RTRenderer::Frame == 0 ? 0.0f : ((RTRenderer::Frame - 1) * avg_time + timestep.GetMilliseconds()) / RTRenderer::Frame;
+			ImGui::Text("Delta Time: %.2fms", timestep.GetMilliseconds());
+			ImGui::Text("Average Time: %.2fms", avg_time);
 			ImGui::Text("Frame: %d", RTRenderer::Frame);
 		}
 		ImGui::End();
@@ -727,6 +866,21 @@ namespace Ume
 			}
 		}
 		ImGui::End();
+
+		//ImGui::Begin("Denoise");
+		//{
+		//	//ImGui::DragFloat("Pos", &RTRenderer::Config.wp, 0.1f);
+		//	//ImGui::DragFloat("Nor", &RTRenderer::Config.wn, 0.1f);
+		//	//ImGui::DragFloat("Col", &RTRenderer::Config.wc, 0.1f);
+		//	//ImGui::DragFloat("Pla", &RTRenderer::Config.wpl, 0.1f);
+		//	ImGui::Image((void*)RTRenderer::GetGBuffer()->GetColorAttachments()[0]->GetRendererID(), ImVec2(64, 64), { 0, 1 }, { 1, 0 });
+		//	ImGui::Image((void*)RTRenderer::GetGBuffer()->GetColorAttachments()[1]->GetRendererID(), ImVec2(64, 64), { 0, 1 }, { 1, 0 });
+		//	ImGui::Image((void*)RTRenderer::GetGBuffer()->GetColorAttachments()[2]->GetRendererID(), ImVec2(64, 64), { 0, 1 }, { 1, 0 });
+		//	ImGui::Image((void*)RTRenderer::GetGBuffer()->GetColorAttachments()[3]->GetRendererID(), ImVec2(64, 64), { 0, 1 }, { 1, 0 });
+		//	ImGui::Image((void*)RTRenderer::GetGBuffer()->GetColorAttachments()[4]->GetRendererID(), ImVec2(64, 64), { 0, 1 }, { 1, 0 });
+		//	ImGui::Image((void*)RTRenderer::GetGBuffer()->GetColorAttachments()[5]->GetRendererID(), ImVec2(64, 64), { 0, 1 }, { 1, 0 });
+		//}
+		//ImGui::End();
 	}
 }
 

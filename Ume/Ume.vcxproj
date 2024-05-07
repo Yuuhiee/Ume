@@ -186,6 +186,7 @@
     <ClInclude Include="src\Ume\Renderer\RayTracing\MeshTriangle.h" />
     <ClInclude Include="src\Ume\Renderer\RayTracing\Object.h" />
     <ClInclude Include="src\Ume\Renderer\RayTracing\Objects.h" />
+    <ClInclude Include="src\Ume\Renderer\RayTracing\PointLight.h" />
     <ClInclude Include="src\Ume\Renderer\RayTracing\RTCamera.h" />
     <ClInclude Include="src\Ume\Renderer\RayTracing\RTRenderer.h" />
     <ClInclude Include="src\Ume\Renderer\RayTracing\Ray.h" />
@@ -206,6 +207,7 @@
     <ClInclude Include="src\Ume\Util\File.h" />
     <ClInclude Include="src\Ume\Util\Math.h" />
     <ClInclude Include="src\Ume\Util\PBR.h" />
+    <ClInclude Include="src\Ume\Util\PreCompute.h" />
     <ClInclude Include="src\Ume\Util\Random.h" />
     <ClInclude Include="src\umepch.h" />
     <ClInclude Include="vendor\glm\glm\common.hpp" />
@@ -654,6 +656,7 @@
     <ClCompile Include="src\Ume\Renderer\RayTracing\Material.cpp" />
     <ClCompile Include="src\Ume\Renderer\RayTracing\MeshTriangle.cpp" />
     <ClCompile Include="src\Ume\Renderer\RayTracing\Object.cpp" />
+    <ClCompile Include="src\Ume\Renderer\RayTracing\PointLight.cpp" />
     <ClCompile Include="src\Ume\Renderer\RayTracing\RTCamera.cpp" />
     <ClCompile Include="src\Ume\Renderer\RayTracing\RTRenderer.cpp" />
     <ClCompile Include="src\Ume\Renderer\RayTracing\Sphere.cpp" />
@@ -671,6 +674,7 @@
     <ClCompile Include="src\Ume\Util\File.cpp" />
     <ClCompile Include="src\Ume\Util\Math.cpp" />
     <ClCompile Include="src\Ume\Util\PBR.cpp" />
+    <ClCompile Include="src\Ume\Util\PreCompute.cpp" />
     <ClCompile Include="src\Ume\Util\Random.cpp" />
     <ClCompile Include="src\umepch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

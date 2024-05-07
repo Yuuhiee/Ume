@@ -33,7 +33,34 @@ namespace Ume
         EmuLut = Texture2D::Create("assets/textures/lut/LUT_Emu.png", sp);
     }
 
-    glm::vec3 PBR::BRDF(const glm::vec3& albedo, float roughness, float metallic, const glm::vec3& N, const glm::vec3& V, const glm::vec3& L)
+    PBR::Part PBR::SeperatedBRDF(const glm::vec3& albedo, float roughness, float metallic, const glm::vec3& N, const glm::vec3& V, const glm::vec3& L, bool direct)
+    {
+        auto F0 = glm::mix(glm::vec3(0.04f), albedo, metallic);
+        auto H = glm::normalize(V + L);
+
+        float NoV = Dot(N, V);
+        float NoL = Dot(N, L);
+        float NoH = Dot(N, H);
+        float VoH = Dot(V, H);
+        float NDF = DistributionGGX(NoH, roughness);
+        float G = GeometrySmith(NoV, NoL, roughness, direct);
+        auto F = FresnelSchlick(VoH, F0);
+
+        auto nominator = NDF * G * F;
+        float denominator = 4.0f * NoV * NoL + 0.0001f;
+        auto specular = nominator / denominator;
+
+        glm::vec3 kD = (glm::vec3(1.0f) - F) * (1.0f - metallic);
+
+        auto whiteF0 = glm::mix(glm::vec3(0.04f), glm::vec3(1.0f), metallic);
+        auto whiteKS = FresnelSchlick(VoH, whiteF0);
+        auto whiteKD = (glm::vec3(1.0f) - F) * (1.0f - metallic);
+        float ks = whiteKS.x / (whiteKS.x + whiteKD.x);
+
+        return { kD * albedo * INV_PI, specular, ks };
+    }
+
+    glm::vec3 PBR::BRDF(const glm::vec3& albedo, float roughness, float metallic, const glm::vec3& N, const glm::vec3& V, const glm::vec3& L, bool direct)
 	{
 		auto F0 = glm::mix(glm::vec3(0.04f), albedo, metallic);
 		auto H = glm::normalize(V + L);
@@ -43,7 +70,7 @@ namespace Ume
 		float NoH = Dot(N, H);
 		float VoH = Dot(V, H);
 		float NDF = DistributionGGX(NoH, roughness);
-		float G = GeometrySmith(NoV, NoL, roughness);
+		float G = GeometrySmith(NoV, NoL, roughness, direct);
 		auto F = FresnelSchlick(VoH, F0);
 
 		auto nominator = NDF * G * F;

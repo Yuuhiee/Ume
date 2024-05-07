@@ -30,8 +30,18 @@ namespace Ume
 	{
 		auto& width = m_Description.Width;
 		auto& height = m_Description.Height;
-		m_DepthAttachment = Texture2D::Create(width, height, { ImageFormat::Depth });
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_DepthAttachment->GetRendererID(), 0);
+
+		if (m_Description.DepthAttachment.Type == TextureType::Texture2D)
+		{
+			m_DepthAttachment = Texture2D::Create(width, height, m_Description.DepthAttachment);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_DepthAttachment->GetRendererID(), 0);
+		}
+		else if (m_Description.DepthAttachment.Type == TextureType::TextureCube)
+		{
+			m_DepthAttachment = TextureCube::Create(m_Description.Size, m_Description.DepthAttachment);
+			glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_DepthAttachment->GetRendererID(), 0);
+		}
+
 
 		uint32_t count = static_cast<uint32_t>(m_Description.ColorAttachments.size());
 		m_ColorAttachments.reserve(count);

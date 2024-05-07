@@ -21,8 +21,10 @@ namespace Ume
 			return { GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE };
 		case ImageFormat::RGBA16F:
 			return { GL_RGBA16F, GL_RGBA, GL_FLOAT };
-		case ImageFormat::Depth:
+		case ImageFormat::DEPTH24STENCIL8:
 			return { GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8 };
+		case ImageFormat::DEPTH32F:
+			return { GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT };
 		}
 		UME_CORE_ERROR("Error TextureFormat!");
 		return { 0, 0, 0 };
@@ -146,17 +148,21 @@ namespace Ume
 		m_Channel = (uint32_t)channels;
 
         m_Data.reserve(width * height);
-        if (channels == 4)
-            for (int i = 0; i < width * height * channels; i += channels)
-                m_Data.push_back(glm::vec4(data[i] / 255.0f, data[i + 1] / 255.0f, data[i + 2] / 255.0f, data[i + 3] / 255.0f));
-        else if (channels == 3)
-            for (int i = 0; i < width * height * channels; i += channels)
-                m_Data.push_back(glm::vec4(data[i] / 255.0f, data[i + 1] / 255.0f, data[i + 2] / 255.0f, 1.0f));
-        else if (channels == 1)
-            for (int i = 0; i < width * height * channels; i += channels)
-                m_Data.push_back(glm::vec4(data[i] / 255.0f, data[i] / 255.0f, data[i] / 255.0f, 1.0f));
-        else
-            UME_CORE_ERROR("Unsupported texture format!");
+        
+		if (specification.StoreFormat == EStoreFormat::Vector)
+		{
+			if (channels == 4)
+				for (int i = 0; i < width * height * channels; i += channels)
+					m_Data.push_back(glm::vec4(data[i] / 255.0f, data[i + 1] / 255.0f, data[i + 2] / 255.0f, data[i + 3] / 255.0f));
+			else if (channels == 3)
+				for (int i = 0; i < width * height * channels; i += channels)
+					m_Data.push_back(glm::vec4(data[i] / 255.0f, data[i + 1] / 255.0f, data[i + 2] / 255.0f, 1.0f));
+			else if (channels == 1)
+				for (int i = 0; i < width * height * channels; i += channels)
+					m_Data.push_back(glm::vec4(data[i] / 255.0f, data[i] / 255.0f, data[i] / 255.0f, 1.0f));
+			else
+				UME_CORE_ERROR("Unsupported texture format!");
+		}
 		
 		GLenum format = 0, internalFormat = 0, type = 0;
 		if (specification.SRGB)
@@ -288,7 +294,6 @@ namespace Ume
 		float theta = std::atan2(direction.z, direction.x);
 		if (theta < 0.0f)  theta += TWO_PI;
 
-		// ������ͼ���е���������
 		float u = theta * INV_TWO_PI;
 		float v = 1.0f - phi * INV_PI;
 
@@ -304,6 +309,37 @@ namespace Ume
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		return pixels;
+	}
+
+	OpenGLTextureCube::OpenGLTextureCube(uint32_t size, const TextureSpecification& specification)
+	{
+		if (m_RendererID) glDeleteTextures(1, &m_RendererID);
+
+		glGenTextures(1, &m_RendererID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
+
+		auto [internalFormat, format, type] = UmeToOpenGLTextureFormat(m_Specification.Format);
+		for (GLuint i = 0; i < 6; ++i)
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, size, size, 0, format, type, nullptr);
+
+		auto filter = UmeToOpenGLTextureFilter(m_Specification.Filter);
+		auto wrap = UmeToOpenGLTextureWrap(m_Specification.Wrap);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, filter);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, filter);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, wrap);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, wrap);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, wrap);
+	}
+
+	OpenGLTextureCube::~OpenGLTextureCube()
+	{
+		glDeleteTextures(1, &m_RendererID);
+	}
+
+	void OpenGLTextureCube::Bind(int slot) const
+	{
+		glActiveTexture(GL_TEXTURE0 + slot);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
 	}
 
 }

@@ -5,9 +5,17 @@
 #include "Ume/Renderer/Renderer2D.h"
 #include "glm/gtx/euler_angles.hpp"
 #include <stack>
+#include "Ume/Renderer/Framebuffer.h"
+#include "Ume/Renderer/Shader.h"
+#include "Ume/Renderer/Renderer.h"
+#include "Ume/Renderer/RenderCommand.h"
 
 namespace Ume
 {
+	static Ref<Framebuffer> shadowFramebuffer = nullptr;
+	static Ref<Shader>	shadowShader = nullptr;
+
+
 	Entity ECS::CreateEntity(const std::string& name/* = ""*/)
 	{
 		Entity entity = { m_Registry.create(), this };
@@ -114,17 +122,8 @@ namespace Ume
 
 	void Scene::BuildBVH()
 	{
-		Lights.clear();
-
-		bool needRebuild = false;
-		for (auto& object : Objects)
-		{
-			needRebuild |= object->Build();
-			if (object->Emissive())
-				Lights.push_back(object);
-		}
-		if (needRebuild)
-			m_BVHRoot = BVHManager::RecursiveBuild(Objects);
+		RebuildLight();
+		m_BVHRoot = BVHManager::RecursiveBuild(Objects);
 		UME_INFO("Build");
 	}
 
@@ -148,5 +147,60 @@ namespace Ume
 		if (objects_it != Objects.end())
 			Objects.erase(objects_it);
 		UME_INFO("Delete: {}", id);
+	}
+	
+	void Scene::RebuildLight()
+	{
+		Lights.clear();
+
+		bool needRebuild = false;
+		for (auto& object : Objects)
+		{
+			needRebuild |= object->Build();
+			if (object->Emissive())
+				Lights.push_back(object);
+		}
+
+		//ShadowMatrices.clear();
+		//ShadowMatrices.resize(Lights.size());
+		//glm::mat4 shadowProj = glm::perspective(90.0f, 1.0f, 1.0f, 25.0f);
+		//for (size_t i = 0; i < Lights.size(); i++)
+		//{
+		//	auto& lightPos = Lights[i]->Transform.Position;
+		//	auto& matrices = ShadowMatrices[i];
+		//	matrices[0] = shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0));
+		//	matrices[1] = shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0));
+		//	matrices[2] = shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0));
+		//	matrices[3] = shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0));
+		//	matrices[4] = shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0));
+		//	matrices[5] = shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0));
+		//}
+		//
+		//if (!shadowFramebuffer)
+		//{
+		//	TextureSpecification sp;
+		//	sp.Format = ImageFormat::DEPTH32F;
+		//	sp.Type = TextureType::TextureCube;
+		//	FramebufferDescription description;
+		//	description.Size = 1024;
+		//	description.DepthAttachment = sp;
+		//	shadowFramebuffer = Framebuffer::Create(description);
+		//}
+		//if (!shadowShader)
+		//{
+		//	shadowShader = Shader::Create("assets/shaders/Shadow.glsl");
+		//}
+		//
+		//shadowFramebuffer->Bind();
+		//{
+		//	RenderCommand::SetClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+		//	RenderCommand::Clear();
+		//	Renderer::BeginScene(glm::mat4(1.0f));
+		//
+		//
+		//
+		//	Renderer::EndScene();
+		//}
+		//shadowFramebuffer->Unbind();
 	}
 }

@@ -30,6 +30,10 @@ uniform int Height;
 uniform int Filter;
 uniform int Accumulate;
 uniform float Frame;
+uniform float s_Pos;
+uniform float s_Nor;
+uniform float s_Col;
+uniform float s_Pla;
 
 float length2(vec3 v)
 {
@@ -51,74 +55,74 @@ const bool wavelet = true;
 const int kernelSize = 16;
 const int passes = 6;
 
+vec3 previous;
+vec3 position;
+vec3 normal;
+vec3 current;
+int ID;
+vec3 filtered = vec3(0.0);
+float totalWeight = 0.0;
+vec2 pStep;
+
+float norm2(vec3 v)
+{
+    float l = length(v);
+    return l * l;
+}
+
+void PerSample(vec2 offset)
+{
+    vec2 texcoord = v_TexCoord + offset * pStep;
+    int id = int(texture(u_IDImage, texcoord).r);
+    if (id != ID || id == 0) return;
+
+    vec3 pos = texture(u_PositionImage, texcoord).rgb;
+    vec3 nor = texture(u_NormalImage, texcoord).rgb;
+    vec3 color = texture(u_CurrentImage, texcoord).rgb;
+        
+    //float d_pos = length2(pos - position) * sigmaPosition;
+    //float d_nor = pow(safeAcos(dot(nor, normal)), 1.0) * sigmaNormal;
+    //float d_color = length2(color - current) * sigmaColor;
+    //float d_plane = d_pos > 0.0 ? pow(dot(nor, normalize(pos - position)), 2.0) * sigmaPlane : 0.0;
+    float d_pos = norm2(pos - position) / (2.0 * pow(s_Pos, 2.0));
+    float d_nor = pow(safeAcos(dot(nor, normal)), 2.0) / (2.0 * pow(s_Nor, 2.0));
+    float d_color = norm2(color - current) / (2.0 * pow(s_Col, 2.0));
+    float d_plane = d_pos > 0.0 ? pow(dot(nor, normalize(pos - position)), 2.0) / (2.0 * pow(s_Pla, 2.0)) : 0.0;
+
+    float weight = exp(-d_pos - d_nor - d_color - d_plane);
+    filtered += color * weight;
+    totalWeight += weight;
+}
+
 void main()
 {
-    vec3 previous = texture(u_PreviousImage, v_TexCoord).rgb;
-    vec3 position = texture(u_PositionImage, v_TexCoord).rgb;
-    vec3 normal = normalize(texture(u_NormalImage, v_TexCoord).xyz);
-    vec3 current = texture(u_CurrentImage, v_TexCoord).rgb;
-    int ID = int(texture(u_IDImage, v_TexCoord).r);
+    previous = texture(u_PreviousImage, v_TexCoord).rgb;
+    position = texture(u_PositionImage, v_TexCoord).rgb;
+    normal = normalize(texture(u_NormalImage, v_TexCoord).xyz);
+    current = texture(u_CurrentImage, v_TexCoord).rgb;
+    ID = int(texture(u_IDImage, v_TexCoord).r);
 
-    // 联合双边滤波
-    if (bool(Filter))
+    if (bool(Filter) && ID != 0)
     {
-        vec3 filtered = vec3(0.0);
-        float totalWeight = 0.0;
-        vec2 pStep = 1.0 / vec2(Width, Height);
+        pStep = 1.0 / vec2(Width, Height);
         if (wavelet)
         {
             for (int pass = 0; pass < passes; pass++)
-            {
                 for (int i = -2; i <= 2; i++)
-                {
                     for (int j = -2; j <= 2; j++)
-                    {
-                        float stride = pow(2, pass);
-                        vec2 texcoord = v_TexCoord + vec2(i, j) * stride * pStep;
-                        int id = int(texture(u_IDImage, texcoord).r);
-                        if (id != ID) continue;
-                        vec3 pos = texture(u_PositionImage, texcoord).rgb;
-                        vec3 nor = texture(u_NormalImage, texcoord).rgb;
-                        vec3 color = texture(u_CurrentImage, texcoord).rgb;
-        
-                        float d_pos = length2(pos - position) * sigmaPosition;
-                        float d_nor = pow(safeAcos(dot(nor, normal)), 1.0) * sigmaNormal;
-                        float d_color = length2(color - current) * sigmaColor;
-                        float d_plane = d_pos > 0.0 ? pow(dot(nor, normalize(pos - position)), 2.0) * sigmaPlane : 0.0;
-        
-                        float weight = exp(-d_pos - d_nor - d_color - d_plane);
-                        filtered += color * weight;
-                        totalWeight += weight;
-                    }
-                }
-            }
+                        PerSample(vec2(i, j) * pass * pass);
         }
         else
         {
             for (int i = -kernelSize; i <= kernelSize; i++)
-            {
                 for (int j = -kernelSize; j <= kernelSize; j++)
-                {
-                    vec2 texcoord = v_TexCoord + vec2(i, j) * pStep;
-                    vec3 pos = texture(u_PositionImage, texcoord).rgb;
-                    vec3 nor = texture(u_NormalImage, texcoord).rgb;
-                    vec3 color = texture(u_CurrentImage, texcoord).rgb;
-        
-                    float d_pos = length2(pos - position) * sigmaPosition;
-                    float d_nor = safeAcos(dot(nor, normal)) * sigmaNormal;
-                    float d_color = length2(color - current) * sigmaColor;
-                    float d_plane = d_pos > 0.0 ? pow(dot(nor, normalize(pos - position)), 2.0) * sigmaPlane : 0.0;
-        
-                    float weight = exp(-d_pos - d_nor - d_color - d_plane);
-                    filtered += color * weight;
-                    totalWeight += weight;
-                }
-            }
+                    PerSample(vec2(i, j));
         }
         filtered /= totalWeight;
         current = filtered;
     }
-    current = clamp(current, vec3(0.0), vec3(1.0));
+    current = clamp(current, vec3(0.0), vec3(10.0));
+    //current = max(current, vec3(0.0));
     vec3 color = bool(Accumulate) ? (previous * (Frame - 1.0) + current) / Frame : current;
     FragColor = vec4(color, 1.0);
 }

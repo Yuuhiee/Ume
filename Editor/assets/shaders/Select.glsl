@@ -28,26 +28,39 @@ uniform int u_Height;
 
 const int EdgeWidth = 1;
 const vec3 EdgeColor = vec3(1.0, 1.0, 0.0);
+
+bool isEdgePixel(vec2 texCoord)
+{
+    int objectID = int(texture(u_IDImage, texCoord).r);
+    for (int i = -EdgeWidth; i <= EdgeWidth; i++)
+    {
+        for (int j = -EdgeWidth; j <= EdgeWidth; j++)
+        {
+            vec2 offset = vec2(i, j) / vec2(u_Width, u_Height);
+            vec2 neighborCoord = texCoord + offset;
+            if (neighborCoord.x >= 0.0 && neighborCoord.x <= 1.0 && neighborCoord.y >= 0.0 && neighborCoord.y <= 1.0)
+            {
+                int neighborID = int(texture(u_IDImage, neighborCoord).r);
+                if (neighborID != objectID && (neighborID == u_SelectedID || objectID == u_SelectedID))
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 void main()
 {
     vec3 color = texture(u_ColorImage, v_TexCoord).rgb;
-    //if (u_SelectedID != 0)
-    //{
-    //    vec2 u_Step = vec2(1.0 / float(u_Width), 1.0 / float(u_Height));
-    //    vec2 uv = v_TexCoord;
-    //    vec2 uv1 = uv + vec2(EdgeWidth * u_Step.x, 0.0);
-    //    vec2 uv2 = uv + vec2(-EdgeWidth * u_Step.x, 0.0);
-    //    vec2 uv3 = uv + vec2(0.0, EdgeWidth * u_Step.y);
-    //    vec2 uv4 = uv + vec2(0.0, -EdgeWidth * u_Step.y);
-    //    int id1 = int(texture(u_IDImage, uv1).r);
-    //    int id2 = int(texture(u_IDImage, uv2).r);
-    //    int id3 = int(texture(u_IDImage, uv3).r);
-    //    int id4 = int(texture(u_IDImage, uv4).r);
-    //    if (id1 == u_SelectedID || id2 == u_SelectedID || id3 == u_SelectedID || id4 == u_SelectedID)
-    //    {
-    //        color = EdgeColor;
-    //    }
-    //    
-    //}
+    if (u_SelectedID != 0)
+    {
+        // draw the edge of selected object
+        if (isEdgePixel(v_TexCoord))
+        {
+            color = EdgeColor;
+        }
+    }
     FragColor = vec4(color, 1.0);
 }

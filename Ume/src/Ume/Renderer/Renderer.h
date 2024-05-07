@@ -16,6 +16,7 @@ namespace Ume
 		static void BeginScene(const glm::mat4& viewProjection);
 		static void EndScene();
 		static void EnableDepthTest(bool enable);
+		static void DrawQuad();
 		static void Submit(const Ref<VertexArray>& vertexArray);
 		static void Submit(const Ref<VertexArray>& vertexArray, const Ref<Shader> shader, const glm::mat4 modelMatrix);
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }

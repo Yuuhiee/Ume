@@ -1514,6 +1514,8 @@
     </ClInclude>
     <ClInclude Include="vendor\stb_image\stb_image_write.h" />
     <ClInclude Include="src\Ume\Renderer\RayTracing\SampleMethod.h" />
+    <ClInclude Include="src\Ume\Util\PreCompute.h" />
+    <ClInclude Include="src\Ume\Renderer\RayTracing\PointLight.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1661,5 +1663,7 @@
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
     <ClCompile Include="vendor\stb_image\stb_image_write.cpp" />
+    <ClCompile Include="src\Ume\Util\PreCompute.cpp" />
+    <ClCompile Include="src\Ume\Renderer\RayTracing\PointLight.cpp" />
   </ItemGroup>
 </Project>

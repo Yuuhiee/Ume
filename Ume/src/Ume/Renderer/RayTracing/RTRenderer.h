@@ -72,7 +72,7 @@ namespace Ume
 		static std::vector<uint32_t> s_HorizontalIter, s_VerticalIter;
 
 		static glm::vec4 RayGen(glm::vec2 coord, uint32_t x, uint32_t y);
-		static glm::vec3 Shade(HitPayload& point, const glm::vec3& inDir);
+		static glm::vec3 Shade(const HitPayload& point, const glm::vec3& inDir);
 		static glm::vec3 Shade(HitPayload& point, const glm::vec3& inDir, SampleMethodFlags method);
 		static glm::vec3 GetIrradiance(const Material& material, const glm::vec3& lightPos, const glm::vec3& receivePos, bool rangeCheck = true);
 		

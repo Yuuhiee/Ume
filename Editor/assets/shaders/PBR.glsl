@@ -1,5 +1,5 @@
 #type vertex
-#version 330 core
+#version 430 core
 
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec3 a_Normal;
@@ -24,7 +24,7 @@ void main()
 }
 
 #type fragment
-#version 330 core
+#version 430 core
 
 in vec3 v_Position;
 in vec3 v_Normal;
@@ -64,8 +64,11 @@ uniform vec3 u_LightPosition;
 uniform Light u_Lights[4];
 uniform int u_NumLight;
 uniform int u_LightIndex;
-uniform float u_ObjectID;
 uniform Material u_Material;
+uniform float u_EnvIntensity;
+uniform sampler2D u_Radiance;
+uniform sampler2D u_Irradiance;
+uniform sampler2D u_BRDFLUT;
 
 const float PI = 3.141592653;
 const float INV_PI = 0.31830988618;
@@ -133,13 +136,32 @@ vec3 BRDF(vec3 N, vec3 V, vec3 L, vec3 albedo, float roughness, float metallic)
 	return kD * albedo * INV_PI + specular;
 }
 
+vec2 GetUV(vec3 dir)
+{
+    float phi = atan(dir.z, dir.x);
+    if (phi < 0.0)
+        phi += 2.0 * PI;
+    float theta = acos(dir.y);
+
+    float u = phi / (2.0 * PI);
+    float v = 1.0 - theta / PI;
+
+    return vec2(u, v);
+}
+
+vec3 FresnelSchlickRoughness(float VoH, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - VoH, 5.0);
+}
+
 void main()
 {
+	vec3 emission = vec3(0.0);
 	if (u_LightIndex != -1)
 	{
-		FragColor = vec4(u_Lights[u_LightIndex].Color, 1);
-		return;
+		emission = u_Lights[u_LightIndex].Color * u_Lights[u_LightIndex].Intensity;
 	}
+
 	vec3 color = vec3(0.0);
 	vec3 N = normalize(v_Normal);
 	vec3 V = normalize(u_CameraPosition - v_Position);
@@ -168,5 +190,21 @@ void main()
 		color += lighting;
 	}
 
-	FragColor = vec4(color, 1);
+    {
+		vec3 F0 = mix(vec3(0.04), albedo, metallic);
+		float NoV = max(dot(N, V), 0.0);
+		vec3 F = FresnelSchlickRoughness(NoV, F0, roughness);
+		vec3 kd = (1.0 - F) * (1.0 - metallic);
+		vec3 irradiance = texture(u_Irradiance, GetUV(N)).rgb;
+		vec3 diffuse = irradiance * albedo;
+
+		vec3 R = normalize(reflect(-V, N));
+		vec3 specularIrradiance = textureLod(u_Radiance, GetUV(R), sqrt(roughness) * textureQueryLevels(u_Radiance)).rgb;
+		vec2 ks = texture(u_BRDFLUT, vec2(NoV, 1.0 - roughness)).rg;
+		vec3 specular = specularIrradiance * (F * ks.x + ks.y);
+
+		color += (diffuse + specular) * u_EnvIntensity; 
+	}
+
+	FragColor = vec4(color + emission , 1);
 }
